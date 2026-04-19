@@ -415,7 +415,7 @@ function Register-MutedLabel {
 }
 
 $form = New-Object System.Windows.Forms.Form
-$form.Text = 'Simple Origin v0.3.0'
+$form.Text = 'Simple Origin v0.3.1'
 $form.Size = New-Object System.Drawing.Size(1220, 1175)
 $form.MinimumSize = New-Object System.Drawing.Size(1220, 1175)
 $form.MaximumSize = New-Object System.Drawing.Size(1220, 1175)
@@ -426,7 +426,7 @@ $form.Font = New-Object System.Drawing.Font('Segoe UI', 9)
 $form.AutoScaleMode = [System.Windows.Forms.AutoScaleMode]::Dpi
 
 $titleLabel = New-Object System.Windows.Forms.Label
-$titleLabel.Text = 'Simple Origin v0.3.0 — Brave policy UI'
+$titleLabel.Text = 'Simple Origin v0.3.1 — Brave policy UI'
 $titleLabel.Location = New-Object System.Drawing.Point(24, 18)
 $titleLabel.Size = New-Object System.Drawing.Size(940, 30)
 $titleLabel.Font = New-Object System.Drawing.Font('Segoe UI', 11.5, [System.Drawing.FontStyle]::Bold)
