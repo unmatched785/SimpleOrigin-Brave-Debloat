@@ -224,7 +224,7 @@ function Detect-DnsPresetName {
     return 'Manual'
 }
 
-$script:isDarkTheme = $true
+$script:isDarkTheme = $false
 $script:themeControls = New-Object System.Collections.ArrayList
 $script:themePanels = New-Object System.Collections.ArrayList
 $script:sectionLabels = New-Object System.Collections.ArrayList
@@ -259,34 +259,37 @@ function Register-MutedLabel {
 
 $form = New-Object System.Windows.Forms.Form
 $form.Text = 'Simple Origin'
-$form.Size = New-Object System.Drawing.Size(1060, 1020)
-$form.MinimumSize = New-Object System.Drawing.Size(1060, 1020)
-$form.MaximumSize = New-Object System.Drawing.Size(1060, 1020)
+$form.Size = New-Object System.Drawing.Size(1180, 1135)
+$form.MinimumSize = New-Object System.Drawing.Size(1180, 1135)
+$form.MaximumSize = New-Object System.Drawing.Size(1180, 1135)
 $form.StartPosition = 'CenterScreen'
 $form.MaximizeBox = $false
 $form.FormBorderStyle = [System.Windows.Forms.FormBorderStyle]::FixedDialog
 $form.Font = New-Object System.Drawing.Font('Segoe UI', 9)
+$form.AutoScaleMode = [System.Windows.Forms.AutoScaleMode]::Dpi
 
 $titleLabel = New-Object System.Windows.Forms.Label
 $titleLabel.Text = 'Simple Origin — Brave policy UI with an Origin preset'
 $titleLabel.Location = New-Object System.Drawing.Point(24, 18)
-$titleLabel.Size = New-Object System.Drawing.Size(760, 28)
+$titleLabel.Size = New-Object System.Drawing.Size(900, 30)
 $titleLabel.Font = New-Object System.Drawing.Font('Segoe UI', 11.5, [System.Drawing.FontStyle]::Bold)
 $titleLabel.AutoEllipsis = $true
+$titleLabel.UseMnemonic = $false
 $form.Controls.Add($titleLabel)
 Register-ThemedControl $titleLabel
 
 $subLabel = New-Object System.Windows.Forms.Label
 $subLabel.Text = 'Origin preset targets Brave Origin upgrade-like behavior. It does not reproduce the standalone compiled-out build.'
 $subLabel.Location = New-Object System.Drawing.Point(24, 46)
-$subLabel.Size = New-Object System.Drawing.Size(840, 20)
+$subLabel.Size = New-Object System.Drawing.Size(980, 20)
 $subLabel.AutoEllipsis = $true
+$subLabel.UseMnemonic = $false
 $form.Controls.Add($subLabel)
 Register-MutedLabel $subLabel
 
 $themeButton = New-Object System.Windows.Forms.Button
 $themeButton.Text = '☾'
-$themeButton.Location = New-Object System.Drawing.Point(965, 18)
+$themeButton.Location = New-Object System.Drawing.Point(1084, 18)
 $themeButton.Size = New-Object System.Drawing.Size(52, 34)
 $themeButton.Font = New-Object System.Drawing.Font('Segoe UI Symbol', 12, [System.Drawing.FontStyle]::Bold)
 $themeButton.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
@@ -304,7 +307,7 @@ Register-ThemedControl $presetLabel
 
 $presetDropdown = New-Object System.Windows.Forms.ComboBox
 $presetDropdown.Location = New-Object System.Drawing.Point(82, 78)
-$presetDropdown.Size = New-Object System.Drawing.Size(220, 28)
+$presetDropdown.Size = New-Object System.Drawing.Size(230, 28)
 $presetDropdown.DropDownStyle = [System.Windows.Forms.ComboBoxStyle]::DropDownList
 $presetDropdown.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
 $presetDropdown.Items.AddRange(@('Custom','Origin'))
@@ -314,7 +317,7 @@ Register-ThemedControl $presetDropdown
 
 $applyPresetButton = New-Object System.Windows.Forms.Button
 $applyPresetButton.Text = 'Load Preset'
-$applyPresetButton.Location = New-Object System.Drawing.Point(312, 77)
+$applyPresetButton.Location = New-Object System.Drawing.Point(322, 77)
 $applyPresetButton.Size = New-Object System.Drawing.Size(112, 30)
 $applyPresetButton.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
 $form.Controls.Add($applyPresetButton)
@@ -323,20 +326,29 @@ $script:actionButtons['loadPreset'] = $applyPresetButton
 
 $scopeLabel = New-Object System.Windows.Forms.Label
 $scopeLabel.Text = 'Write scope:'
-$scopeLabel.Location = New-Object System.Drawing.Point(456, 80)
+$scopeLabel.Location = New-Object System.Drawing.Point(470, 80)
 $scopeLabel.Size = New-Object System.Drawing.Size(78, 22)
 $form.Controls.Add($scopeLabel)
 Register-ThemedControl $scopeLabel
 
 $scopeDropdown = New-Object System.Windows.Forms.ComboBox
-$scopeDropdown.Location = New-Object System.Drawing.Point(540, 78)
-$scopeDropdown.Size = New-Object System.Drawing.Size(170, 28)
+$scopeDropdown.Location = New-Object System.Drawing.Point(555, 78)
+$scopeDropdown.Size = New-Object System.Drawing.Size(255, 28)
 $scopeDropdown.DropDownStyle = [System.Windows.Forms.ComboBoxStyle]::DropDownList
 $scopeDropdown.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
-$scopeDropdown.Items.AddRange(@('Machine (HKLM)','User (HKCU)'))
-$scopeDropdown.SelectedItem = 'Machine (HKLM)'
+$scopeDropdown.Items.AddRange(@('User (HKCU) — Recommended','Machine (HKLM)'))
+$scopeDropdown.SelectedItem = 'User (HKCU) — Recommended'
 $form.Controls.Add($scopeDropdown)
 Register-ThemedControl $scopeDropdown
+
+$scopeHintLabel = New-Object System.Windows.Forms.Label
+$scopeHintLabel.Text = 'Recommended: User (HKCU) for most personal PCs. Use Machine (HKLM) only if you want Brave managed for all users.'
+$scopeHintLabel.Location = New-Object System.Drawing.Point(820, 80)
+$scopeHintLabel.Size = New-Object System.Drawing.Size(245, 34)
+$scopeHintLabel.AutoEllipsis = $true
+$scopeHintLabel.UseMnemonic = $false
+$form.Controls.Add($scopeHintLabel)
+Register-MutedLabel $scopeHintLabel
 
 $script:allCheckboxes = @()
 $script:checkboxById = @{}
@@ -354,6 +366,7 @@ function New-SectionPanel {
     $panel.Location = New-Object System.Drawing.Point($X, $Y)
     $panel.Size = New-Object System.Drawing.Size($Width, $Height)
     $panel.BorderStyle = [System.Windows.Forms.BorderStyle]::FixedSingle
+    $panel.AutoScroll = $true
     $form.Controls.Add($panel)
     Register-ThemedPanel $panel
 
@@ -363,14 +376,15 @@ function New-SectionPanel {
     $label.Size = New-Object System.Drawing.Size(($Width - 36), 24)
     $label.Font = New-Object System.Drawing.Font('Segoe UI', 10.5, [System.Drawing.FontStyle]::Bold)
     $label.AutoEllipsis = $true
+    $label.UseMnemonic = $false
     $panel.Controls.Add($label)
     Register-SectionLabel $label
 
     return $panel
 }
 
-$leftPanel  = New-SectionPanel -Title 'Telemetry & Privacy' -X 24 -Y 120 -Width 480 -Height 705
-$rightPanel = New-SectionPanel -Title 'Brave Features & Performance' -X 532 -Y 120 -Width 485 -Height 705
+$leftPanel  = New-SectionPanel -Title 'Telemetry && Privacy' -X 24 -Y 120 -Width 545 -Height 760
+$rightPanel = New-SectionPanel -Title 'Brave Features && Performance' -X 593 -Y 120 -Width 545 -Height 760
 
 function Add-FeatureCheckboxes {
     param(
@@ -406,10 +420,11 @@ function Add-FeatureCheckboxes {
             $cb.Text = $feature.Name
             $cb.Tag = $feature
             $cb.Location = New-Object System.Drawing.Point(20, $currentY)
-            $cb.Size = New-Object System.Drawing.Size(($Panel.Width - 40), 26)
+            $cb.Size = New-Object System.Drawing.Size(($Panel.Width - 48), 30)
             $cb.AutoEllipsis = $true
             $cb.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
             $cb.UseCompatibleTextRendering = $true
+            $cb.UseMnemonic = $false
             $Panel.Controls.Add($cb)
             Register-ThemedControl $cb
             $script:allCheckboxes += $cb
@@ -427,7 +442,7 @@ function Add-FeatureCheckboxes {
                 })
             }
 
-            $currentY += 27
+            $currentY += 30
         }
         $currentY += 10
     }
@@ -436,7 +451,7 @@ function Add-FeatureCheckboxes {
 Add-FeatureCheckboxes -Panel $leftPanel  -Features ($featureCatalog | Where-Object { $_.Category -in @('Telemetry','Privacy') }) -StartY 38 -ShowSubheaders
 Add-FeatureCheckboxes -Panel $rightPanel -Features ($featureCatalog | Where-Object { $_.Category -in @('Brave','Performance') }) -StartY 38 -ShowSubheaders
 
-$dnsGroup = New-SectionPanel -Title 'DNS Over HTTPS' -X 24 -Y 840 -Width 993 -Height 110
+$dnsGroup = New-SectionPanel -Title 'DNS Over HTTPS' -X 24 -Y 895 -Width 1114 -Height 120
 
 $dnsPresetLabel = New-Object System.Windows.Forms.Label
 $dnsPresetLabel.Text = 'Preset:'
@@ -447,7 +462,7 @@ Register-ThemedControl $dnsPresetLabel
 
 $dnsPresetDropdown = New-Object System.Windows.Forms.ComboBox
 $dnsPresetDropdown.Location = New-Object System.Drawing.Point(72, 40)
-$dnsPresetDropdown.Size = New-Object System.Drawing.Size(265, 28)
+$dnsPresetDropdown.Size = New-Object System.Drawing.Size(280, 28)
 $dnsPresetDropdown.DropDownStyle = [System.Windows.Forms.ComboBoxStyle]::DropDownList
 $dnsPresetDropdown.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
 $dnsPresetDropdown.Items.AddRange([string[]]$dohPresets.Keys)
@@ -457,14 +472,14 @@ Register-ThemedControl $dnsPresetDropdown
 
 $dnsModeLabel = New-Object System.Windows.Forms.Label
 $dnsModeLabel.Text = 'Mode:'
-$dnsModeLabel.Location = New-Object System.Drawing.Point(356, 42)
+$dnsModeLabel.Location = New-Object System.Drawing.Point(372, 42)
 $dnsModeLabel.Size = New-Object System.Drawing.Size(45, 22)
 $dnsGroup.Controls.Add($dnsModeLabel)
 Register-ThemedControl $dnsModeLabel
 
 $dnsDropdown = New-Object System.Windows.Forms.ComboBox
-$dnsDropdown.Location = New-Object System.Drawing.Point(404, 40)
-$dnsDropdown.Size = New-Object System.Drawing.Size(160, 28)
+$dnsDropdown.Location = New-Object System.Drawing.Point(420, 40)
+$dnsDropdown.Size = New-Object System.Drawing.Size(170, 28)
 $dnsDropdown.DropDownStyle = [System.Windows.Forms.ComboBoxStyle]::DropDownList
 $dnsDropdown.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
 $dnsDropdown.Items.AddRange(@('off','automatic','secure','custom'))
@@ -474,14 +489,14 @@ Register-ThemedControl $dnsDropdown
 
 $dnsTemplateLabel = New-Object System.Windows.Forms.Label
 $dnsTemplateLabel.Text = 'Template URL:'
-$dnsTemplateLabel.Location = New-Object System.Drawing.Point(584, 42)
-$dnsTemplateLabel.Size = New-Object System.Drawing.Size(92, 22)
+$dnsTemplateLabel.Location = New-Object System.Drawing.Point(610, 42)
+$dnsTemplateLabel.Size = New-Object System.Drawing.Size(98, 22)
 $dnsGroup.Controls.Add($dnsTemplateLabel)
 Register-ThemedControl $dnsTemplateLabel
 
 $dnsTemplateBox = New-Object System.Windows.Forms.TextBox
-$dnsTemplateBox.Location = New-Object System.Drawing.Point(682, 40)
-$dnsTemplateBox.Size = New-Object System.Drawing.Size(285, 27)
+$dnsTemplateBox.Location = New-Object System.Drawing.Point(714, 40)
+$dnsTemplateBox.Size = New-Object System.Drawing.Size(360, 27)
 $dnsTemplateBox.Enabled = $false
 $dnsGroup.Controls.Add($dnsTemplateBox)
 Register-ThemedControl $dnsTemplateBox
@@ -489,13 +504,13 @@ Register-ThemedControl $dnsTemplateBox
 $dnsHintLabel = New-Object System.Windows.Forms.Label
 $dnsHintLabel.Text = 'Selecting a preset fills the template and switches Mode to custom.'
 $dnsHintLabel.Location = New-Object System.Drawing.Point(20, 76)
-$dnsHintLabel.Size = New-Object System.Drawing.Size(520, 18)
+$dnsHintLabel.Size = New-Object System.Drawing.Size(700, 18)
 $dnsGroup.Controls.Add($dnsHintLabel)
 Register-MutedLabel $dnsHintLabel
 
 $exportButton = New-Object System.Windows.Forms.Button
 $exportButton.Text = 'Export'
-$exportButton.Location = New-Object System.Drawing.Point(24, 956)
+$exportButton.Location = New-Object System.Drawing.Point(24, 1024)
 $exportButton.Size = New-Object System.Drawing.Size(112, 32)
 $exportButton.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
 $form.Controls.Add($exportButton)
@@ -504,7 +519,7 @@ $script:actionButtons['export'] = $exportButton
 
 $importButton = New-Object System.Windows.Forms.Button
 $importButton.Text = 'Import'
-$importButton.Location = New-Object System.Drawing.Point(148, 956)
+$importButton.Location = New-Object System.Drawing.Point(148, 1024)
 $importButton.Size = New-Object System.Drawing.Size(112, 32)
 $importButton.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
 $form.Controls.Add($importButton)
@@ -513,7 +528,7 @@ $script:actionButtons['import'] = $importButton
 
 $applyButton = New-Object System.Windows.Forms.Button
 $applyButton.Text = 'Apply'
-$applyButton.Location = New-Object System.Drawing.Point(782, 956)
+$applyButton.Location = New-Object System.Drawing.Point(902, 1024)
 $applyButton.Size = New-Object System.Drawing.Size(112, 32)
 $applyButton.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
 $form.Controls.Add($applyButton)
@@ -521,9 +536,9 @@ Register-ThemedControl $applyButton
 $script:actionButtons['apply'] = $applyButton
 
 $resetButton = New-Object System.Windows.Forms.Button
-$resetButton.Text = 'Reset Managed Policies'
-$resetButton.Location = New-Object System.Drawing.Point(905, 956)
-$resetButton.Size = New-Object System.Drawing.Size(112, 32)
+$resetButton.Text = 'Reset Managed`nPolicies'
+$resetButton.Location = New-Object System.Drawing.Point(1026, 1024)
+$resetButton.Size = New-Object System.Drawing.Size(112, 40)
 $resetButton.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
 $form.Controls.Add($resetButton)
 Register-ThemedControl $resetButton
@@ -531,9 +546,10 @@ $script:actionButtons['reset'] = $resetButton
 
 $statusLabel = New-Object System.Windows.Forms.Label
 $statusLabel.Text = 'Ready.'
-$statusLabel.Location = New-Object System.Drawing.Point(290, 962)
-$statusLabel.Size = New-Object System.Drawing.Size(470, 20)
+$statusLabel.Location = New-Object System.Drawing.Point(290, 1030)
+$statusLabel.Size = New-Object System.Drawing.Size(590, 20)
 $statusLabel.AutoEllipsis = $true
+$statusLabel.UseMnemonic = $false
 $form.Controls.Add($statusLabel)
 Register-MutedLabel $statusLabel
 
@@ -716,7 +732,7 @@ function Initialize-CurrentSettings {
         $scopeDropdown.SelectedItem = 'Machine (HKLM)'
     }
     else {
-        $scopeDropdown.SelectedItem = 'User (HKCU)'
+        $scopeDropdown.SelectedItem = 'User (HKCU) — Recommended'
     }
 }
 
@@ -731,7 +747,7 @@ function Get-SelectedFeatureObjects {
 }
 
 $applyButton.Add_Click({
-    $script:registryPath = if ($scopeDropdown.SelectedItem -eq 'User (HKCU)') { $userRegistryPath } else { $machineRegistryPath }
+    $script:registryPath = if ([string]$scopeDropdown.SelectedItem -like 'User (HKCU)*') { $userRegistryPath } else { $machineRegistryPath }
 
     if ($script:registryPath -eq $machineRegistryPath -and -not (Test-IsAdmin)) {
         [System.Windows.Forms.MessageBox]::Show(
@@ -917,6 +933,6 @@ $importButton.Add_Click({
     }
 })
 
-Apply-Theme -DarkMode $true
+Apply-Theme -DarkMode $false
 Initialize-CurrentSettings
 [void]$form.ShowDialog()
