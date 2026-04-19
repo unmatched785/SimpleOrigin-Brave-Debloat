@@ -2,13 +2,14 @@
 
 Simple Origin is a Windows PowerShell GUI for configuring **Brave managed policies**.
 
-It focuses on three things:
+It gives you:
 
 - one-by-one policy toggles
-- a built-in **Origin** preset for an Origin-upgrade-like setup
-- a built-in **Hardening** preset for a stricter privacy setup
+- preset-based setup for common configurations
+- DNS-over-HTTPS presets
+- import/export for repeatable setups
 
-## What it is
+## What this is
 
 Simple Origin is a **policy UI for regular Brave**.
 
@@ -16,30 +17,32 @@ It aims to get close to **Brave Origin upgrade-like behavior** through managed p
 
 ## Included presets
 
-### Origin
-The **Origin** preset is the closest preset to Brave Origin upgrade-like behavior.
+### Origin + Hardening — Recommended
+The default recommended preset.
 
-It focuses on Brave feature removal and telemetry reduction without bundling extra hardening choices that go beyond that scope.
+This combines an Origin-like Brave feature reduction set with a practical privacy-hardening layer.
+
+It is the best starting point for most users who want a cleaner Brave configuration without manually selecting every toggle.
+
+### Origin
+The closest preset to **Brave Origin upgrade-like behavior** using managed policies.
+
+It focuses on Brave feature removal and core telemetry reduction without bundling extra hardening choices that go beyond that scope.
 
 ### Hardening
-The **Hardening** preset is stricter.
+A stricter privacy-oriented preset inspired by public Brave hardening guidance.
 
-It adds privacy-oriented controls such as:
+It focuses on the parts that map cleanly to managed policies, such as:
 
-- Safe Browsing reporting off
-- URL data collection off
-- feedback surveys off
-- browser sign-in off
-- Global Privacy Control on
-- Do Not Track on
+- reduced telemetry
 - WebRTC non-proxied UDP restriction
-- QUIC off
-- third-party cookies blocked
-- Sync off
-- extra Brave UI/bloat reduction
+- blocking third-party cookies
+- disabling search suggestions
+- disabling background mode
+- disabling Rewards and Wallet
 
-Use **Origin** when you want the closest Origin-like preset.
-Use **Hardening** when you want a broader privacy-oriented preset.
+### Custom
+Manual mode. Choose each policy toggle yourself.
 
 ## Scope recommendation
 
@@ -86,9 +89,18 @@ If Windows blocks direct local script execution:
 powershell -NoProfile -ExecutionPolicy Bypass -Command "iwr 'https://raw.githubusercontent.com/unmatched785/SimpleOrigin/main/SimpleOrigin.ps1' -OutFile $env:TEMP\SimpleOrigin.ps1; & $env:TEMP\SimpleOrigin.ps1"
 ```
 
-## Notes
+## Safety notes
 
 - Light theme is the default. Dark mode is optional via the top-right toggle.
 - Restart Brave after applying settings.
 - Verify results in `brave://policy` if needed.
 - **Reset Managed Policies** removes the Brave policy values touched by this tool from both HKCU and HKLM.
+- This tool is designed around managed policies first. Some Brave settings do not map cleanly to managed policies and are therefore not forced by this project.
+
+## Roadmap
+
+Planned next direction:
+
+- refine preset behavior further
+- improve preset-to-current-state detection
+- investigate a future **experimental** layer for non-policy Brave settings that cannot be enforced safely through managed policies alone
