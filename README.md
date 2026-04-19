@@ -87,5 +87,4 @@ powershell -NoProfile -ExecutionPolicy Bypass -Command "iwr 'https://raw.githubu
 
 - Light theme is the default. Dark theme is optional via the top-right toggle.
 - After applying settings, restart Brave and verify with `brave://policy`.
-- Import supports both this tool's JSON format and SlimBrave Neo's `Features` key format.
 - **Reset Managed Policies** removes the Brave policy values touched by this tool from both HKCU and HKLM.
