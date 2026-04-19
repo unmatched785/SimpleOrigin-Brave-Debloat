@@ -50,8 +50,6 @@ Set-ExecutionPolicy -Scope Process Bypass
 
 ## One-liner for GitHub raw hosting
 
-After uploading `SimpleOrigin.ps1` to your repo, the intended one-liner is:
-
 ```powershell
 iwr "https://raw.githubusercontent.com/unmatched785/SimpleOrigin/main/SimpleOrigin.ps1" -OutFile "SimpleOrigin.ps1"; .\SimpleOrigin.ps1
 ```
