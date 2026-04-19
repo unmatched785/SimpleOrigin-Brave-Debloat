@@ -293,7 +293,7 @@ function Add-OtherScopeWarning {
         [string]$Key
     )
 
-    $label = "$ScopeName:$Key"
+    $label = "${ScopeName}:$Key"
     if (-not $Warnings.Contains($label)) {
         [void]$Warnings.Add($label)
     }
