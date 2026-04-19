@@ -53,7 +53,7 @@ Set-ExecutionPolicy -Scope Process Bypass
 After uploading `SimpleOrigin.ps1` to your repo, the intended one-liner is:
 
 ```powershell
-iwr "https://raw.githubusercontent.com/<your-user>/<your-repo>/main/SimpleOrigin.ps1" -OutFile "SimpleOrigin.ps1"; .\SimpleOrigin.ps1
+iwr "https://raw.githubusercontent.com/unmatched785/SimpleOrigin/main/SimpleOrigin.ps1" -OutFile "SimpleOrigin.ps1"; .\SimpleOrigin.ps1
 ```
 
 ## Notes
