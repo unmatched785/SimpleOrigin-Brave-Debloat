@@ -118,42 +118,51 @@ foreach ($feature in $featureCatalog) {
     $featureMap[$feature.Id] = $feature
 }
 
+$originPreset = @(
+    'telemetry.metrics',
+    'telemetry.p3a',
+    'telemetry.stats_ping',
+    'brave.rewards',
+    'brave.wallet',
+    'brave.vpn',
+    'brave.ai_chat',
+    'brave.news',
+    'brave.talk',
+    'brave.playlist',
+    'brave.web_discovery',
+    'brave.speedreader',
+    'brave.tor',
+    'perf.wayback'
+)
+
+$hardeningPreset = @(
+    'telemetry.metrics',
+    'telemetry.p3a',
+    'telemetry.stats_ping',
+    'privacy.webrtc',
+    'privacy.third_party_cookies',
+    'brave.rewards',
+    'brave.wallet',
+    'brave.ai_chat',
+    'brave.web_discovery',
+    'perf.background',
+    'perf.search_suggest'
+)
+
+$originAndHardeningPreset = @($originPreset + $hardeningPreset | Select-Object -Unique)
+
 $presets = [ordered]@{
-    'Custom'    = @()
-    'Origin'    = ($featureCatalog | Where-Object { $_.Origin } | ForEach-Object { $_.Id })
-    'Hardening' = @(
-        'telemetry.metrics',
-        'telemetry.safebrowsing_rep',
-        'telemetry.url_data',
-        'telemetry.feedback',
-        'telemetry.p3a',
-        'telemetry.stats_ping',
-        'privacy.autofill_cards',
-        'privacy.browser_signin',
-        'privacy.dnt',
-        'privacy.gpc',
-        'privacy.webrtc',
-        'privacy.quic',
-        'privacy.third_party_cookies',
-        'brave.rewards',
-        'brave.wallet',
-        'brave.vpn',
-        'brave.ai_chat',
-        'brave.news',
-        'brave.talk',
-        'brave.playlist',
-        'brave.web_discovery',
-        'brave.speedreader',
-        'brave.tor',
-        'brave.sync',
-        'perf.background',
-        'perf.media_recs',
-        'perf.shopping',
-        'perf.promotions',
-        'perf.search_suggest',
-        'perf.default_browser',
-        'perf.wayback'
-    )
+    'Origin + Hardening — Recommended' = $originAndHardeningPreset
+    'Origin'                           = $originPreset
+    'Hardening'                        = $hardeningPreset
+    'Custom'                           = @()
+}
+
+$presetDescriptions = [ordered]@{
+    'Origin + Hardening — Recommended' = 'Recommended preset: Origin-like debloating plus practical privacy hardening.'
+    'Origin'                           = 'Closest to Brave Origin upgrade-like behavior using managed policies.'
+    'Hardening'                        = 'Privacy-oriented preset inspired by public Brave hardening guidance.'
+    'Custom'                           = 'Manual selection. Choose each policy toggle yourself.'
 }
 
 $dohPresets = [ordered]@{
@@ -302,7 +311,7 @@ $form.Font = New-Object System.Drawing.Font('Segoe UI', 9)
 $form.AutoScaleMode = [System.Windows.Forms.AutoScaleMode]::Dpi
 
 $titleLabel = New-Object System.Windows.Forms.Label
-$titleLabel.Text = 'Simple Origin — Brave policy UI with an Origin preset'
+$titleLabel.Text = 'Simple Origin — Brave policy UI'
 $titleLabel.Location = New-Object System.Drawing.Point(24, 18)
 $titleLabel.Size = New-Object System.Drawing.Size(940, 30)
 $titleLabel.Font = New-Object System.Drawing.Font('Segoe UI', 11.5, [System.Drawing.FontStyle]::Bold)
@@ -312,7 +321,7 @@ $form.Controls.Add($titleLabel)
 Register-ThemedControl $titleLabel
 
 $subLabel = New-Object System.Windows.Forms.Label
-$subLabel.Text = 'Origin preset targets Brave Origin upgrade-like behavior. It does not reproduce the standalone compiled-out build.'
+$subLabel.Text = 'Managed-policy UI for Brave. Includes Origin, Hardening, and Origin + Hardening presets. No binary patching.'
 $subLabel.Location = New-Object System.Drawing.Point(24, 46)
 $subLabel.Size = New-Object System.Drawing.Size(1015, 20)
 $subLabel.AutoEllipsis = $true
@@ -343,8 +352,8 @@ $presetDropdown.Location = New-Object System.Drawing.Point(82, 78)
 $presetDropdown.Size = New-Object System.Drawing.Size(230, 28)
 $presetDropdown.DropDownStyle = [System.Windows.Forms.ComboBoxStyle]::DropDownList
 $presetDropdown.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
-$presetDropdown.Items.AddRange(@('Custom','Origin'))
-$presetDropdown.SelectedItem = 'Custom'
+$presetDropdown.Items.AddRange([string[]]$presets.Keys)
+$presetDropdown.SelectedIndex = 0
 $form.Controls.Add($presetDropdown)
 Register-ThemedControl $presetDropdown
 
@@ -375,13 +384,22 @@ $form.Controls.Add($scopeDropdown)
 Register-ThemedControl $scopeDropdown
 
 $scopeHintLabel = New-Object System.Windows.Forms.Label
-$scopeHintLabel.Text = 'Recommended default: User (HKCU). Use Machine (HKLM) only for system-wide Brave policy on shared PCs.'
+$scopeHintLabel.Text = 'Recommended: User (HKCU) for most personal PCs. Use Machine (HKLM) only if you want system-wide policy.'
 $scopeHintLabel.Location = New-Object System.Drawing.Point(820, 76)
 $scopeHintLabel.Size = New-Object System.Drawing.Size(345, 40)
 $scopeHintLabel.AutoEllipsis = $true
 $scopeHintLabel.UseMnemonic = $false
 $form.Controls.Add($scopeHintLabel)
 Register-MutedLabel $scopeHintLabel
+
+$presetDescriptionLabel = New-Object System.Windows.Forms.Label
+$presetDescriptionLabel.Text = [string]$presetDescriptions['Origin + Hardening — Recommended']
+$presetDescriptionLabel.Location = New-Object System.Drawing.Point(24, 108)
+$presetDescriptionLabel.Size = New-Object System.Drawing.Size(1140, 20)
+$presetDescriptionLabel.AutoEllipsis = $true
+$presetDescriptionLabel.UseMnemonic = $false
+$form.Controls.Add($presetDescriptionLabel)
+Register-MutedLabel $presetDescriptionLabel
 
 $script:allCheckboxes = @()
 $script:checkboxById = @{}
@@ -416,8 +434,8 @@ function New-SectionPanel {
     return $panel
 }
 
-$leftPanel  = New-SectionPanel -Title 'Telemetry and Privacy' -X 24 -Y 120 -Width 565 -Height 800
-$rightPanel = New-SectionPanel -Title 'Brave Features and Performance' -X 607 -Y 120 -Width 565 -Height 800
+$leftPanel  = New-SectionPanel -Title 'Telemetry and Privacy' -X 24 -Y 136 -Width 565 -Height 786
+$rightPanel = New-SectionPanel -Title 'Brave Features and Performance' -X 607 -Y 136 -Width 565 -Height 786
 
 function Add-FeatureCheckboxes {
     param(
@@ -713,6 +731,38 @@ function Set-FeatureSelection {
     }
 }
 
+function Update-PresetDescription {
+    $selectedPreset = [string]$presetDropdown.SelectedItem
+    if ($presetDescriptions.Contains($selectedPreset)) {
+        $presetDescriptionLabel.Text = [string]$presetDescriptions[$selectedPreset]
+    }
+    else {
+        $presetDescriptionLabel.Text = [string]$presetDescriptions['Custom']
+    }
+}
+
+function Get-CurrentFeatureIdSet {
+    return @((Get-SelectedFeatureObjects) | ForEach-Object { $_.Id } | Sort-Object)
+}
+
+function Get-MatchingPresetName {
+    $currentIds = @(Get-CurrentFeatureIdSet)
+    foreach ($name in $presets.Keys) {
+        if ($name -eq 'Custom') { continue }
+        $presetIds = @($presets[$name] | Sort-Object)
+        if ($currentIds.Count -ne $presetIds.Count) { continue }
+        $same = $true
+        for ($i = 0; $i -lt $currentIds.Count; $i++) {
+            if ($currentIds[$i] -ne $presetIds[$i]) {
+                $same = $false
+                break
+            }
+        }
+        if ($same) { return $name }
+    }
+    return 'Custom'
+}
+
 $applyPresetButton.Add_Click({
     $selectedPreset = [string]$presetDropdown.SelectedItem
     if (-not $presets.Contains($selectedPreset)) {
@@ -720,9 +770,16 @@ $applyPresetButton.Add_Click({
     }
     Set-FeatureSelection -FeatureIds $presets[$selectedPreset]
     $statusLabel.Text = "Loaded preset: $selectedPreset"
+    Update-PresetDescription
+})
+
+$presetDropdown.Add_SelectedIndexChanged({
+    Update-PresetDescription
 })
 
 function Initialize-CurrentSettings {
+    $detectedScope = 'User'
+
     foreach ($cb in $script:allCheckboxes) {
         $feature = $cb.Tag
         $policy = Get-PolicySetting -Key $feature.Key
@@ -730,6 +787,8 @@ function Initialize-CurrentSettings {
             $cb.Checked = $false
             continue
         }
+
+        $detectedScope = [string]$policy.Scope
 
         if ($feature.Type -eq 'DWord') {
             $cb.Checked = ([int]$policy.Value -eq [int]$feature.Value)
@@ -745,6 +804,7 @@ function Initialize-CurrentSettings {
     if ($dnsTemplatePolicy -and -not [string]::IsNullOrWhiteSpace($dnsTemplatePolicy.Value)) {
         $dnsDropdown.SelectedItem = 'custom'
         $dnsTemplateBox.Text = [string]$dnsTemplatePolicy.Value
+        $detectedScope = [string]$dnsTemplatePolicy.Scope
     }
     elseif ($dnsModePolicy -and -not [string]::IsNullOrWhiteSpace($dnsModePolicy.Value)) {
         $modeValue = [string]$dnsModePolicy.Value
@@ -754,6 +814,7 @@ function Initialize-CurrentSettings {
         else {
             $dnsDropdown.SelectedItem = 'off'
         }
+        $detectedScope = [string]$dnsModePolicy.Scope
     }
     else {
         $dnsDropdown.SelectedItem = 'off'
@@ -761,7 +822,24 @@ function Initialize-CurrentSettings {
 
     $dnsPresetDropdown.SelectedItem = Detect-DnsPresetName -Template $dnsTemplateBox.Text
 
-    $scopeDropdown.SelectedIndex = 0
+    if ($detectedScope -eq 'Machine') {
+        $scopeDropdown.SelectedIndex = 1
+    }
+    else {
+        $scopeDropdown.SelectedIndex = 0
+    }
+
+    $matchingPreset = Get-MatchingPresetName
+    if ((Get-CurrentFeatureIdSet).Count -eq 0) {
+        $presetDropdown.SelectedItem = 'Origin + Hardening — Recommended'
+    }
+    elseif ($presetDropdown.Items.Contains($matchingPreset)) {
+        $presetDropdown.SelectedItem = $matchingPreset
+    }
+    else {
+        $presetDropdown.SelectedItem = 'Origin + Hardening — Recommended'
+    }
+    Update-PresetDescription
 }
 
 
@@ -815,6 +893,8 @@ $applyButton.Add_Click({
     Cleanup-PolicyPathTree -LeafPath $machineRegistryPath
     Cleanup-PolicyPathTree -LeafPath $userRegistryPath
 
+    $presetDropdown.SelectedItem = Get-MatchingPresetName
+    Update-PresetDescription
     $statusLabel.Text = "Applied to $($scopeDropdown.SelectedItem). Restart Brave."
     [System.Windows.Forms.MessageBox]::Show(
         'Settings applied. Restart Brave and check brave://policy if you want to verify the result.',
@@ -851,7 +931,8 @@ $resetButton.Add_Click({
     $dnsDropdown.SelectedItem = 'off'
     $dnsPresetDropdown.SelectedItem = 'Manual'
     $dnsTemplateBox.Text = ''
-    $presetDropdown.SelectedItem = 'Custom'
+    $presetDropdown.SelectedIndex = 0
+    Update-PresetDescription
     $statusLabel.Text = 'Managed policies reset.'
 })
 
@@ -867,7 +948,7 @@ $exportButton.Add_Click({
     }
 
     $payload = [ordered]@{
-        AppVersion   = '0.2.2'
+        AppVersion   = '0.1.0'
         Preset       = [string]$presetDropdown.SelectedItem
         FeatureIds   = @((Get-SelectedFeatureObjects) | ForEach-Object { $_.Id })
         FeatureKeys  = @((Get-SelectedFeatureObjects) | ForEach-Object { $_.Key })
@@ -875,6 +956,7 @@ $exportButton.Add_Click({
         DnsPreset    = [string]$dnsPresetDropdown.SelectedItem
         DnsTemplates = [string]$dnsTemplateBox.Text
         Theme        = if ($script:isDarkTheme) { 'dark' } else { 'light' }
+        Scope        = if ([string]$scopeDropdown.SelectedItem -like 'User (HKCU)*') { 'User' } else { 'Machine' }
     }
 
     $payload | ConvertTo-Json -Depth 4 | Set-Content -Encoding UTF8 -Path $dialog.FileName
@@ -943,8 +1025,19 @@ $importButton.Add_Click({
             $presetDropdown.SelectedItem = [string]$payload.Preset
         }
         else {
-            $presetDropdown.SelectedItem = 'Custom'
+            $presetDropdown.SelectedItem = Get-MatchingPresetName
         }
+
+        if ($payload.PSObject.Properties.Name -contains 'Scope' -and $payload.Scope) {
+            if (([string]$payload.Scope) -eq 'Machine') {
+                $scopeDropdown.SelectedIndex = 1
+            }
+            else {
+                $scopeDropdown.SelectedIndex = 0
+            }
+        }
+
+        Update-PresetDescription
 
         if ($payload.PSObject.Properties.Name -contains 'Theme' -and $payload.Theme) {
             Apply-Theme -DarkMode (([string]$payload.Theme).ToLowerInvariant() -ne 'light')
@@ -963,8 +1056,13 @@ $importButton.Add_Click({
 })
 
 Apply-Theme -DarkMode $false
+$scopeDropdown.SelectedIndex = 0
+$presetDropdown.SelectedIndex = 0
+Update-PresetDescription
 Initialize-CurrentSettings
 $form.Add_Shown({
-    $scopeDropdown.SelectedIndex = 0
+    $scopeDropdown.SelectedIndex = if ([string]$scopeDropdown.SelectedItem -like 'Machine*') { 1 } else { 0 }
+    if (-not $presetDropdown.SelectedItem) { $presetDropdown.SelectedIndex = 0 }
+    Update-PresetDescription
 })
 [void]$form.ShowDialog()
