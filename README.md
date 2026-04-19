@@ -6,7 +6,6 @@ Simple Origin is a Windows PowerShell GUI for configuring **Brave managed polici
 - an **Origin** preset that aims to match **Brave Origin upgrade** as closely as policy control allows
 - DNS-over-HTTPS presets
 - JSON import/export
-- compatibility import for older SlimBrave Neo JSON exports
 
 ## What it is
 
