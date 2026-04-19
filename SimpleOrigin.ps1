@@ -28,6 +28,7 @@ if (-not $NoAdminRelaunch -and -not (Test-IsAdmin)) {
 $machineRegistryPath = "HKLM:\SOFTWARE\Policies\BraveSoftware\Brave"
 $userRegistryPath    = "HKCU:\SOFTWARE\Policies\BraveSoftware\Brave"
 $script:registryPath = $machineRegistryPath
+$script:toolVersion  = '0.3.0'
 
 function Ensure-PolicyPathExists {
     param([string]$Path)
@@ -90,7 +91,6 @@ $featureCatalog = @(
     @{ Id = 'brave.wallet';                Name = 'Disable Brave Wallet';             Key = 'BraveWalletDisabled';                    Value = 1;                           Type = 'DWord'; Category = 'Brave';       Origin = $true  },
     @{ Id = 'brave.vpn';                   Name = 'Disable Brave VPN';                Key = 'BraveVPNDisabled';                       Value = 1;                           Type = 'DWord'; Category = 'Brave';       Origin = $true  },
     @{ Id = 'brave.ai_chat';               Name = 'Disable Brave AI Chat';            Key = 'BraveAIChatEnabled';                     Value = 0;                           Type = 'DWord'; Category = 'Brave';       Origin = $true  },
-    @{ Id = 'brave.shields';               Name = 'Disable Brave Shields';            Key = 'BraveShieldsDisabledForUrls';            Value = '["https://*", "http://*"]'; Type = 'String'; Category = 'Brave';      Origin = $false },
     @{ Id = 'brave.news';                  Name = 'Disable Brave News';               Key = 'BraveNewsDisabled';                      Value = 1;                           Type = 'DWord'; Category = 'Brave';       Origin = $true  },
     @{ Id = 'brave.talk';                  Name = 'Disable Brave Talk';               Key = 'BraveTalkDisabled';                      Value = 1;                           Type = 'DWord'; Category = 'Brave';       Origin = $true  },
     @{ Id = 'brave.playlist';              Name = 'Disable Brave Playlist';           Key = 'BravePlaylistEnabled';                   Value = 0;                           Type = 'DWord'; Category = 'Brave';       Origin = $true  },
@@ -176,6 +176,16 @@ $dohPresets = [ordered]@{
     'NextDNS Custom Profile'         = 'https://dns.nextdns.io/YOUR_PROFILE_ID'
 }
 
+function Get-ManagedPolicyKeys {
+    $keys = @(
+        ($featureCatalog | ForEach-Object { $_.Key } | Select-Object -Unique)
+        'DnsOverHttpsMode'
+        'DnsOverHttpsTemplates'
+    ) | Select-Object -Unique
+
+    return @($keys)
+}
+
 function Get-PolicySetting {
     param([string]$Key)
     $machineSettings = Get-ItemProperty -Path $machineRegistryPath -ErrorAction SilentlyContinue
@@ -190,17 +200,136 @@ function Get-PolicySetting {
     return $null
 }
 
+function Get-ManagedScopeSummary {
+    $keys = @(Get-ManagedPolicyKeys)
+    $machineSettings = Get-ItemProperty -Path $machineRegistryPath -ErrorAction SilentlyContinue
+    $userSettings    = Get-ItemProperty -Path $userRegistryPath -ErrorAction SilentlyContinue
+
+    $machineCount = 0
+    $userCount = 0
+
+    foreach ($key in $keys) {
+        if ($machineSettings -and ($machineSettings.PSObject.Properties.Name -contains $key)) {
+            $machineCount++
+        }
+        if ($userSettings -and ($userSettings.PSObject.Properties.Name -contains $key)) {
+            $userCount++
+        }
+    }
+
+    $preferredScope = if ($machineCount -gt 0) { 'Machine' } elseif ($userCount -gt 0) { 'User' } else { 'User' }
+
+    return [pscustomobject]@{
+        HasMachine     = ($machineCount -gt 0)
+        HasUser        = ($userCount -gt 0)
+        MachineCount   = $machineCount
+        UserCount      = $userCount
+        IsMixed        = ($machineCount -gt 0 -and $userCount -gt 0)
+        PreferredScope = $preferredScope
+    }
+}
+
+function Get-WriteScopeInfo {
+    param([string]$ScopeSelection)
+
+    $targetPath = if ([string]$ScopeSelection -like 'User (HKCU)*') { $userRegistryPath } else { $machineRegistryPath }
+    $otherPath  = if ($targetPath -eq $userRegistryPath) { $machineRegistryPath } else { $userRegistryPath }
+    $scopeName  = if ($targetPath -eq $userRegistryPath) { 'User' } else { 'Machine' }
+
+    return [pscustomobject]@{
+        TargetPath = $targetPath
+        OtherPath  = $otherPath
+        ScopeName  = $scopeName
+    }
+}
+
+function Set-ManagedPropertyAtPath {
+    param(
+        [string]$Path,
+        [string]$Key,
+        [object]$Value,
+        [string]$Type
+    )
+
+    Ensure-PolicyPathExists -Path $Path
+    Set-ItemProperty -Path $Path -Name $Key -Value $Value -Type $Type -Force
+}
+
+function Remove-ManagedPropertyFromPath {
+    param(
+        [string]$Key,
+        [string]$Path
+    )
+
+    try {
+        if (-not (Test-Path -Path $Path)) {
+            return $true
+        }
+
+        $item = Get-ItemProperty -Path $Path -ErrorAction SilentlyContinue
+        if ($item -and ($item.PSObject.Properties.Name -contains $Key)) {
+            Remove-ItemProperty -Path $Path -Name $Key -ErrorAction Stop
+        }
+
+        Cleanup-PolicyPathTree -LeafPath $Path
+        return $true
+    }
+    catch {
+        return $false
+    }
+}
+
+function Remove-ManagedPropertyEverywhere {
+    param([string]$Key)
+
+    [void](Remove-ManagedPropertyFromPath -Key $Key -Path $machineRegistryPath)
+    [void](Remove-ManagedPropertyFromPath -Key $Key -Path $userRegistryPath)
+}
+
+function Add-OtherScopeWarning {
+    param(
+        [System.Collections.ArrayList]$Warnings,
+        [string]$ScopeName,
+        [string]$Key
+    )
+
+    $label = "$ScopeName:$Key"
+    if (-not $Warnings.Contains($label)) {
+        [void]$Warnings.Add($label)
+    }
+}
+
+function Clear-OtherScopeManagedProperty {
+    param(
+        [string]$Key,
+        [string]$OtherPath,
+        [string]$OtherScopeName,
+        [System.Collections.ArrayList]$OtherScopeWarnings
+    )
+
+    if (-not (Remove-ManagedPropertyFromPath -Key $Key -Path $OtherPath)) {
+        Add-OtherScopeWarning -Warnings $OtherScopeWarnings -ScopeName $OtherScopeName -Key $Key
+    }
+}
+
 function Set-DnsSettings {
     param(
         [string]$DnsMode,
-        [string]$DnsTemplates
+        [string]$DnsTemplates,
+        [string]$TargetPath,
+        [string]$OtherPath,
+        [string]$TargetScopeName,
+        [System.Collections.ArrayList]$OtherScopeWarnings
     )
 
     $resolvedMode = $DnsMode
+    $otherScopeName = if ($TargetScopeName -eq 'User') { 'Machine' } else { 'User' }
 
     if ([string]::IsNullOrWhiteSpace($DnsMode) -or $DnsMode -eq 'browser default (unset)') {
-        Remove-ManagedProperty -Key 'DnsOverHttpsMode'
-        Remove-ManagedProperty -Key 'DnsOverHttpsTemplates'
+        [void](Remove-ManagedPropertyFromPath -Key 'DnsOverHttpsMode' -Path $TargetPath)
+        [void](Remove-ManagedPropertyFromPath -Key 'DnsOverHttpsTemplates' -Path $TargetPath)
+        Clear-OtherScopeManagedProperty -Key 'DnsOverHttpsMode' -OtherPath $OtherPath -OtherScopeName $otherScopeName -OtherScopeWarnings $OtherScopeWarnings
+        Clear-OtherScopeManagedProperty -Key 'DnsOverHttpsTemplates' -OtherPath $OtherPath -OtherScopeName $otherScopeName -OtherScopeWarnings $OtherScopeWarnings
         return $true
     }
 
@@ -214,34 +343,18 @@ function Set-DnsSettings {
             ) | Out-Null
             return $false
         }
+
         $resolvedMode = 'secure'
-        Ensure-PolicyPathExists -Path $script:registryPath
-        Set-ItemProperty -Path $script:registryPath -Name 'DnsOverHttpsTemplates' -Value $DnsTemplates -Type String -Force
-        if ($script:registryPath -eq $machineRegistryPath) {
-            Remove-ItemProperty -Path $userRegistryPath -Name 'DnsOverHttpsTemplates' -ErrorAction SilentlyContinue
-        }
+        Set-ManagedPropertyAtPath -Path $TargetPath -Key 'DnsOverHttpsTemplates' -Value $DnsTemplates -Type String
     }
     else {
-        Remove-ItemProperty -Path $script:registryPath -Name 'DnsOverHttpsTemplates' -ErrorAction SilentlyContinue
-        if ($script:registryPath -eq $machineRegistryPath) {
-            Remove-ItemProperty -Path $userRegistryPath -Name 'DnsOverHttpsTemplates' -ErrorAction SilentlyContinue
-        }
+        [void](Remove-ManagedPropertyFromPath -Key 'DnsOverHttpsTemplates' -Path $TargetPath)
     }
 
-    Ensure-PolicyPathExists -Path $script:registryPath
-    Set-ItemProperty -Path $script:registryPath -Name 'DnsOverHttpsMode' -Value $resolvedMode -Type String -Force
-    if ($script:registryPath -eq $machineRegistryPath) {
-        Remove-ItemProperty -Path $userRegistryPath -Name 'DnsOverHttpsMode' -ErrorAction SilentlyContinue
-    }
+    Set-ManagedPropertyAtPath -Path $TargetPath -Key 'DnsOverHttpsMode' -Value $resolvedMode -Type String
+    Clear-OtherScopeManagedProperty -Key 'DnsOverHttpsMode' -OtherPath $OtherPath -OtherScopeName $otherScopeName -OtherScopeWarnings $OtherScopeWarnings
+    Clear-OtherScopeManagedProperty -Key 'DnsOverHttpsTemplates' -OtherPath $OtherPath -OtherScopeName $otherScopeName -OtherScopeWarnings $OtherScopeWarnings
     return $true
-}
-
-function Remove-ManagedProperty {
-    param([string]$Key)
-    Remove-ItemProperty -Path $machineRegistryPath -Name $Key -ErrorAction SilentlyContinue
-    Remove-ItemProperty -Path $userRegistryPath -Name $Key -ErrorAction SilentlyContinue
-    Cleanup-PolicyPathTree -LeafPath $machineRegistryPath
-    Cleanup-PolicyPathTree -LeafPath $userRegistryPath
 }
 
 function Detect-DnsPresetName {
@@ -302,7 +415,7 @@ function Register-MutedLabel {
 }
 
 $form = New-Object System.Windows.Forms.Form
-$form.Text = 'Simple Origin'
+$form.Text = 'Simple Origin v0.3.0'
 $form.Size = New-Object System.Drawing.Size(1220, 1175)
 $form.MinimumSize = New-Object System.Drawing.Size(1220, 1175)
 $form.MaximumSize = New-Object System.Drawing.Size(1220, 1175)
@@ -313,7 +426,7 @@ $form.Font = New-Object System.Drawing.Font('Segoe UI', 9)
 $form.AutoScaleMode = [System.Windows.Forms.AutoScaleMode]::Dpi
 
 $titleLabel = New-Object System.Windows.Forms.Label
-$titleLabel.Text = 'Simple Origin — Brave policy UI'
+$titleLabel.Text = 'Simple Origin v0.3.0 — Brave policy UI'
 $titleLabel.Location = New-Object System.Drawing.Point(24, 18)
 $titleLabel.Size = New-Object System.Drawing.Size(940, 30)
 $titleLabel.Font = New-Object System.Drawing.Font('Segoe UI', 11.5, [System.Drawing.FontStyle]::Bold)
@@ -323,7 +436,7 @@ $form.Controls.Add($titleLabel)
 Register-ThemedControl $titleLabel
 
 $subLabel = New-Object System.Windows.Forms.Label
-$subLabel.Text = 'Managed-policy UI for Brave. Includes Origin, Hardening, and Origin + Hardening presets. No binary patching.'
+$subLabel.Text = 'Managed-policy UI for Brave. Includes Origin, Hardening, and Origin + Hardening presets. Scope-aware apply; no binary patching.'
 $subLabel.Location = New-Object System.Drawing.Point(24, 46)
 $subLabel.Size = New-Object System.Drawing.Size(1015, 20)
 $subLabel.AutoEllipsis = $true
@@ -386,7 +499,7 @@ $form.Controls.Add($scopeDropdown)
 Register-ThemedControl $scopeDropdown
 
 $scopeHintLabel = New-Object System.Windows.Forms.Label
-$scopeHintLabel.Text = 'Recommended: User (HKCU) for most personal PCs. Use Machine (HKLM) only if you want system-wide policy.'
+$scopeHintLabel.Text = 'Recommended: User (HKCU) for most personal PCs. Apply makes the selected scope authoritative for Simple Origin-managed keys when possible.'
 $scopeHintLabel.Location = New-Object System.Drawing.Point(820, 76)
 $scopeHintLabel.Size = New-Object System.Drawing.Size(345, 40)
 $scopeHintLabel.AutoEllipsis = $true
@@ -555,7 +668,7 @@ $dnsGroup.Controls.Add($dnsTemplateBox)
 Register-ThemedControl $dnsTemplateBox
 
 $dnsHintLabel = New-Object System.Windows.Forms.Label
-$dnsHintLabel.Text = 'Browser default (unset) removes DoH policy. Selecting a preset fills the template and switches Mode to custom.'
+$dnsHintLabel.Text = 'Browser default (unset) removes DoH policy. Selecting a preset fills the template and switches Mode to custom in the UI.'
 $dnsHintLabel.Location = New-Object System.Drawing.Point(20, 76)
 $dnsHintLabel.Size = New-Object System.Drawing.Size(700, 18)
 $dnsGroup.Controls.Add($dnsHintLabel)
@@ -598,7 +711,7 @@ Register-ThemedControl $resetButton
 $script:actionButtons['reset'] = $resetButton
 
 $statusLabel = New-Object System.Windows.Forms.Label
-$statusLabel.Text = 'Ready.'
+$statusLabel.Text = 'Ready. Scope-aware apply is enabled.'
 $statusLabel.Location = New-Object System.Drawing.Point(290, 1072)
 $statusLabel.Size = New-Object System.Drawing.Size(620, 20)
 $statusLabel.AutoEllipsis = $true
@@ -780,7 +893,8 @@ $presetDropdown.Add_SelectedIndexChanged({
 })
 
 function Initialize-CurrentSettings {
-    $detectedScope = 'User'
+    $scopeSummary = Get-ManagedScopeSummary
+    $detectedScope = [string]$scopeSummary.PreferredScope
 
     foreach ($cb in $script:allCheckboxes) {
         $feature = $cb.Tag
@@ -789,8 +903,6 @@ function Initialize-CurrentSettings {
             $cb.Checked = $false
             continue
         }
-
-        $detectedScope = [string]$policy.Scope
 
         if ($feature.Type -eq 'DWord') {
             $cb.Checked = ([int]$policy.Value -eq [int]$feature.Value)
@@ -806,7 +918,6 @@ function Initialize-CurrentSettings {
     if ($dnsTemplatePolicy -and -not [string]::IsNullOrWhiteSpace($dnsTemplatePolicy.Value)) {
         $dnsDropdown.SelectedItem = 'custom'
         $dnsTemplateBox.Text = [string]$dnsTemplatePolicy.Value
-        $detectedScope = [string]$dnsTemplatePolicy.Scope
     }
     elseif ($dnsModePolicy -and -not [string]::IsNullOrWhiteSpace($dnsModePolicy.Value)) {
         $modeValue = [string]$dnsModePolicy.Value
@@ -816,10 +927,11 @@ function Initialize-CurrentSettings {
         else {
             $dnsDropdown.SelectedItem = 'browser default (unset)'
         }
-        $detectedScope = [string]$dnsModePolicy.Scope
+        $dnsTemplateBox.Text = ''
     }
     else {
         $dnsDropdown.SelectedItem = 'browser default (unset)'
+        $dnsTemplateBox.Text = ''
     }
 
     $dnsPresetDropdown.SelectedItem = Detect-DnsPresetName -Template $dnsTemplateBox.Text
@@ -841,9 +953,22 @@ function Initialize-CurrentSettings {
     else {
         $presetDropdown.SelectedItem = 'Origin + Hardening — Recommended'
     }
-    Update-PresetDescription
-}
 
+    Update-PresetDescription
+
+    if ($scopeSummary.IsMixed) {
+        $statusLabel.Text = 'Detected mixed HKLM/HKCU Brave policy state. Machine policies override User for overlapping keys.'
+    }
+    elseif ($scopeSummary.HasMachine) {
+        $statusLabel.Text = 'Detected existing Machine (HKLM) Brave policies.'
+    }
+    elseif ($scopeSummary.HasUser) {
+        $statusLabel.Text = 'Detected existing User (HKCU) Brave policies.'
+    }
+    else {
+        $statusLabel.Text = 'Ready. Scope-aware apply is enabled.'
+    }
+}
 
 function Get-SelectedFeatureObjects {
     $selected = @()
@@ -856,11 +981,22 @@ function Get-SelectedFeatureObjects {
 }
 
 $applyButton.Add_Click({
-    $script:registryPath = if ([string]$scopeDropdown.SelectedItem -like 'User (HKCU)*') { $userRegistryPath } else { $machineRegistryPath }
+    $scopeInfo = Get-WriteScopeInfo -ScopeSelection ([string]$scopeDropdown.SelectedItem)
+    $script:registryPath = [string]$scopeInfo.TargetPath
 
-    if ($script:registryPath -eq $machineRegistryPath -and -not (Test-IsAdmin)) {
+    if ($scopeInfo.ScopeName -eq 'Machine' -and -not (Test-IsAdmin)) {
         [System.Windows.Forms.MessageBox]::Show(
             'Machine scope requires administrator rights. Switch Write scope to User (HKCU) or relaunch as admin.',
+            'Simple Origin',
+            [System.Windows.Forms.MessageBoxButtons]::OK,
+            [System.Windows.Forms.MessageBoxIcon]::Warning
+        ) | Out-Null
+        return
+    }
+
+    if (([string]$dnsDropdown.SelectedItem) -eq 'custom' -and [string]::IsNullOrWhiteSpace($dnsTemplateBox.Text)) {
+        [System.Windows.Forms.MessageBox]::Show(
+            'Custom DoH requires a template URL, e.g. https://cloudflare-dns.com/dns-query',
             'Simple Origin',
             [System.Windows.Forms.MessageBoxButtons]::OK,
             [System.Windows.Forms.MessageBoxIcon]::Warning
@@ -873,40 +1009,64 @@ $applyButton.Add_Click({
         $selectedFeatures[$feature.Key] = $feature
     }
 
+    $otherScopeWarnings = New-Object System.Collections.ArrayList
+    $otherScopeName = if ($scopeInfo.ScopeName -eq 'User') { 'Machine' } else { 'User' }
+
     $uniqueKeys = $featureCatalog | ForEach-Object { $_.Key } | Select-Object -Unique
     foreach ($key in $uniqueKeys) {
         if ($selectedFeatures.ContainsKey($key)) {
             $feature = $selectedFeatures[$key]
-            Ensure-PolicyPathExists -Path $script:registryPath
-            Set-ItemProperty -Path $script:registryPath -Name $feature.Key -Value $feature.Value -Type $feature.Type -Force
-            if ($script:registryPath -eq $machineRegistryPath) {
-                Remove-ItemProperty -Path $userRegistryPath -Name $key -ErrorAction SilentlyContinue
-            }
+            Set-ManagedPropertyAtPath -Path $scopeInfo.TargetPath -Key $feature.Key -Value $feature.Value -Type $feature.Type
         }
         else {
-            Remove-ManagedProperty -Key $key
+            [void](Remove-ManagedPropertyFromPath -Key $key -Path $scopeInfo.TargetPath)
         }
+
+        Clear-OtherScopeManagedProperty -Key $key -OtherPath $scopeInfo.OtherPath -OtherScopeName $otherScopeName -OtherScopeWarnings $otherScopeWarnings
     }
 
-    if (-not (Set-DnsSettings -DnsMode ([string]$dnsDropdown.SelectedItem) -DnsTemplates $dnsTemplateBox.Text)) {
+    if (-not (Set-DnsSettings -DnsMode ([string]$dnsDropdown.SelectedItem) -DnsTemplates $dnsTemplateBox.Text -TargetPath $scopeInfo.TargetPath -OtherPath $scopeInfo.OtherPath -TargetScopeName $scopeInfo.ScopeName -OtherScopeWarnings $otherScopeWarnings)) {
+        Initialize-CurrentSettings
         return
     }
 
     Cleanup-PolicyPathTree -LeafPath $machineRegistryPath
     Cleanup-PolicyPathTree -LeafPath $userRegistryPath
 
-    $presetDropdown.SelectedItem = Get-MatchingPresetName
-    Update-PresetDescription
-    $statusLabel.Text = "Applied to $($scopeDropdown.SelectedItem). Restart Brave."
-    [System.Windows.Forms.MessageBox]::Show(
-        'Settings applied. Restart Brave and check brave://policy if you want to verify the result.',
-        'Simple Origin',
-        [System.Windows.Forms.MessageBoxButtons]::OK,
-        [System.Windows.Forms.MessageBoxIcon]::Information
-    ) | Out-Null
+    Initialize-CurrentSettings
+
+    if ($otherScopeWarnings.Count -gt 0) {
+        $statusLabel.Text = "Applied to $($scopeInfo.ScopeName) scope. Some $otherScopeName-scope keys could not be cleared."
+        [System.Windows.Forms.MessageBox]::Show(
+            "Settings were written to $($scopeInfo.ScopeName) scope. However, some $otherScopeName-scope keys could not be cleared, so Brave may still prefer those values. Use Reset Managed Policies or relaunch as admin if you want a clean single-scope state.",
+            'Simple Origin',
+            [System.Windows.Forms.MessageBoxButtons]::OK,
+            [System.Windows.Forms.MessageBoxIcon]::Warning
+        ) | Out-Null
+    }
+    else {
+        $statusLabel.Text = "Applied to $($scopeInfo.ScopeName) scope. Restart Brave."
+        [System.Windows.Forms.MessageBox]::Show(
+            "Settings applied. For the keys managed by Simple Origin, $($scopeInfo.ScopeName) scope is now authoritative. Restart Brave and check brave://policy if you want to verify the result.",
+            'Simple Origin',
+            [System.Windows.Forms.MessageBoxButtons]::OK,
+            [System.Windows.Forms.MessageBoxIcon]::Information
+        ) | Out-Null
+    }
 })
 
 $resetButton.Add_Click({
+    $scopeSummary = Get-ManagedScopeSummary
+    if ($scopeSummary.HasMachine -and -not (Test-IsAdmin)) {
+        [System.Windows.Forms.MessageBox]::Show(
+            'Reset Managed Policies needs administrator rights when Machine (HKLM) keys are present.',
+            'Simple Origin',
+            [System.Windows.Forms.MessageBoxButtons]::OK,
+            [System.Windows.Forms.MessageBoxIcon]::Warning
+        ) | Out-Null
+        return
+    }
+
     $confirm = [System.Windows.Forms.MessageBox]::Show(
         'This removes the managed Brave policies touched by this tool from both HKLM and HKCU. Continue?',
         'Simple Origin',
@@ -918,24 +1078,14 @@ $resetButton.Add_Click({
         return
     }
 
-    $uniqueKeys = $featureCatalog | ForEach-Object { $_.Key } | Select-Object -Unique
-    foreach ($key in $uniqueKeys) {
-        Remove-ManagedProperty -Key $key
+    foreach ($key in (Get-ManagedPolicyKeys)) {
+        Remove-ManagedPropertyEverywhere -Key $key
     }
-    Remove-ManagedProperty -Key 'DnsOverHttpsMode'
-    Remove-ManagedProperty -Key 'DnsOverHttpsTemplates'
+
     Cleanup-PolicyPathTree -LeafPath $machineRegistryPath
     Cleanup-PolicyPathTree -LeafPath $userRegistryPath
-
-    foreach ($cb in $script:allCheckboxes) {
-        $cb.Checked = $false
-    }
-    $dnsDropdown.SelectedItem = 'browser default (unset)'
-    $dnsPresetDropdown.SelectedItem = 'Manual'
-    $dnsTemplateBox.Text = ''
-    $presetDropdown.SelectedIndex = 0
-    Update-PresetDescription
-    $statusLabel.Text = 'Managed policies reset.'
+    Initialize-CurrentSettings
+    $statusLabel.Text = 'Managed policies reset from HKLM and HKCU.'
 })
 
 $exportButton.Add_Click({
@@ -950,7 +1100,7 @@ $exportButton.Add_Click({
     }
 
     $payload = [ordered]@{
-        AppVersion   = '0.2.1'
+        AppVersion   = $script:toolVersion
         Preset       = [string]$presetDropdown.SelectedItem
         FeatureIds   = @((Get-SelectedFeatureObjects) | ForEach-Object { $_.Id })
         FeatureKeys  = @((Get-SelectedFeatureObjects) | ForEach-Object { $_.Key })
