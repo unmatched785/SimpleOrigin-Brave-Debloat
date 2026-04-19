@@ -58,4 +58,3 @@ iwr "https://raw.githubusercontent.com/unmatched785/SimpleOrigin/main/SimpleOrig
 
 - The script defaults to **Machine (HKLM)** when elevated and **User (HKCU)** otherwise.
 - After applying settings, restart Brave and verify with `brave://policy`.
-- Import supports both this tool's JSON format and SlimBrave Neo's `Features` key format.
