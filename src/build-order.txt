@@ -1,0 +1,11 @@
+00-ParametersAndAssemblies.ps1
+01-CustomCheckBox.ps1
+10-StartupAndPaths.ps1
+20-PolicyCatalog.ps1
+30-RegistryAndDns.ps1
+40-ThemeRegistration.ps1
+50-UiScaffold.ps1
+60-UiBuilders.ps1
+70-StateAndTheme.ps1
+80-EventHandlers.ps1
+90-EntryPoint.ps1

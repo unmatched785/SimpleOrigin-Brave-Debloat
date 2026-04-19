@@ -13,63 +13,46 @@ It gives you:
 
 Simple Origin is a **policy UI for regular Brave**.
 
-Its goal is to get close to **Brave Origin-like feature reduction** using **officially supported Brave / Chromium policy surfaces**. It does **not** patch Brave binaries, and it does **not** try to reproduce the separate standalone Brave Origin build.
+Its goal is to get close to **Brave Origin-like feature reduction** using **officially supported Brave / Chromium policy surfaces**.
+
+It does **not** patch Brave binaries, and it does **not** try to reproduce the separate standalone Brave Origin build.
 
 ## Why the Brave Origin context matters
 
-Brave Origin itself is an official minimal Brave variant / upgrade.  
-Simple Origin is **not** that product.
+Brave Origin itself is an official minimal Brave variant / upgrade.
 
-This repo exists for users who want a cleaner, more controlled **regular Brave** setup through managed policies, while staying on the documented configuration path that Brave already supports.
+Simple Origin is **not** that product. This repo exists for users who want a cleaner, more controlled **regular Brave** setup through managed policies, while staying on the documented configuration path that Brave already supports.
 
 ## Included presets
 
 ### Origin + Hardening — Recommended
-The default recommended preset.
 
-This combines an Origin-like Brave feature reduction set with a practical privacy-hardening layer.
-
-It is the best starting point for most users who want a cleaner Brave configuration without manually selecting every toggle.
+The default recommended preset. This combines an Origin-like Brave feature reduction set with a practical privacy-hardening layer.
 
 ### Origin
+
 The closest preset to **Brave Origin-like behavior** using managed policies.
 
-It focuses on Brave feature removal and core telemetry reduction without bundling extra hardening choices that go beyond that scope.
-
 ### Hardening
+
 A stricter privacy-oriented preset inspired by public Brave hardening guidance.
 
-It focuses on the parts that map cleanly to managed policies, such as:
-
-- reduced telemetry
-- WebRTC non-proxied UDP restriction
-- blocking third-party cookies
-- disabling search suggestions
-- disabling background mode
-- disabling Rewards and Wallet
-
 ### Custom
+
 Manual mode. Choose each policy toggle yourself.
 
 ## Write scope behavior
 
 **Recommended default: User (HKCU).**
 
-Use **User (HKCU) — Recommended** for most personal PCs.  
-Use **Machine (HKLM)** only when you intentionally want system-wide Brave policy for all users on the device.
+Use **User (HKCU) — Recommended** for most personal PCs. Use **Machine (HKLM)** only when you intentionally want system-wide Brave policy for all users on the device.
 
-### v0.3.0 scope behavior
-
-In v0.3.0, **Apply is scope-aware**.
-
-For the keys managed by this tool, Apply now tries to make the **selected scope authoritative** by:
+For the keys managed by this tool, **Apply** tries to make the selected scope authoritative by:
 
 1. writing the selected state to the chosen scope, and
-2. clearing the same managed keys from the other scope when possible
+2. clearing the same managed keys from the other scope when possible.
 
-This avoids stale mixed HKCU/HKLM states where the UI says one thing but Brave still prefers another because of policy precedence.
-
-If Machine-scope keys cannot be cleared while writing to User scope, Simple Origin will warn you that Brave may still prefer the Machine values.
+This helps avoid stale mixed HKCU/HKLM states where the UI says one thing but Brave still prefers another because of policy precedence.
 
 ## DNS over HTTPS presets
 
@@ -86,12 +69,6 @@ Included presets:
 
 Selecting a DNS preset fills the template URL and switches the UI mode to `custom`.
 
-### DoH behavior in this project
-
-- `browser default (unset)` removes the tool-managed DoH policy values
-- `custom` means the UI will write a DoH template and set the managed mode needed for template-based DoH
-- preset selection is just a convenience layer over the same policy fields
-
 ## Policy coverage and limits
 
 This project is **managed-policy first**.
@@ -104,10 +81,9 @@ That means:
 
 ### Important note about Brave Shields
 
-v0.3.0 intentionally **does not** expose a global **Disable Brave Shields** toggle.
+This project intentionally **does not** expose a fake global **Disable Brave Shields** toggle.
 
-The Brave policy surface for Shields uses **site lists**, not a true “disable Shields everywhere” global policy.  
-Because of that, exposing a fake global toggle would be misleading.
+The Brave policy surface for Shields uses **site lists**, not a true “disable Shields everywhere” global policy.
 
 A future release may add a **site-specific Shields allow/disable list editor**, but that is separate from a global toggle.
 
@@ -130,6 +106,44 @@ Set-ExecutionPolicy -Scope Process Bypass
 .\SimpleOrigin.ps1
 ```
 
+## Repository layout
+
+This repository now keeps **editable source files** in `src/` and keeps **one compiled distributable file** at the repo root:
+
+```text
+SimpleOrigin/
+├── Compile.ps1
+├── SimpleOrigin.ps1
+├── LICENSE
+├── README.md
+└── src/
+    ├── 00-ParametersAndAssemblies.ps1
+    ├── 01-CustomCheckBox.ps1
+    ├── 10-StartupAndPaths.ps1
+    ├── 20-PolicyCatalog.ps1
+    ├── 30-RegistryAndDns.ps1
+    ├── 40-ThemeRegistration.ps1
+    ├── 50-UiScaffold.ps1
+    ├── 60-UiBuilders.ps1
+    ├── 70-StateAndTheme.ps1
+    ├── 80-EventHandlers.ps1
+    └── 90-EntryPoint.ps1
+```
+
+### For users
+
+You do **not** need to build anything. Just run the root `SimpleOrigin.ps1` file.
+
+### For maintainers
+
+Edit the files in `src/`, then rebuild the single-file release with:
+
+```powershell
+.\Compile.ps1
+```
+
+That regenerates `SimpleOrigin.ps1` at the repo root.
+
 ## One-line GitHub raw launch
 
 For a public repository:
@@ -146,7 +160,8 @@ powershell -NoProfile -ExecutionPolicy Bypass -Command "iwr 'https://raw.githubu
 
 ## Safety notes
 
-- Light theme is the default. Dark mode is optional via the top-right toggle.
+- Light theme is the default.
+- Dark mode is optional via the top-right toggle.
 - Restart Brave after applying settings.
 - Verify results in `brave://policy` if needed.
 - **Reset Managed Policies** removes the Brave policy values touched by this tool from both HKCU and HKLM.
@@ -155,7 +170,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -Command "iwr 'https://raw.githubu
 
 ## Roadmap
 
-Near-term follow-up items after v0.3.0:
+Near-term follow-up items:
 
 - deferred elevation instead of admin prompt on launch
 - better mixed-scope conflict reporting
