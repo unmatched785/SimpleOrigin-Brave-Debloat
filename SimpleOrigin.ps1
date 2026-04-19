@@ -29,9 +29,38 @@ $machineRegistryPath = "HKLM:\SOFTWARE\Policies\BraveSoftware\Brave"
 $userRegistryPath    = "HKCU:\SOFTWARE\Policies\BraveSoftware\Brave"
 $script:registryPath = $machineRegistryPath
 
-foreach ($path in @($machineRegistryPath, $userRegistryPath)) {
-    if (-not (Test-Path -Path $path)) {
-        New-Item -Path $path -Force | Out-Null
+function Ensure-PolicyPathExists {
+    param([string]$Path)
+    if (-not (Test-Path -Path $Path)) {
+        New-Item -Path $Path -Force | Out-Null
+    }
+}
+
+function Test-RegistryKeyIsEmpty {
+    param([string]$Path)
+    if (-not (Test-Path -Path $Path)) { return $true }
+
+    $item = Get-Item -Path $Path -ErrorAction SilentlyContinue
+    if (-not $item) { return $true }
+
+    if ($item.GetSubKeyNames().Count -gt 0) { return $false }
+
+    $props = (Get-ItemProperty -Path $Path -ErrorAction SilentlyContinue).PSObject.Properties |
+        Where-Object { $_.Name -notlike 'PS*' }
+
+    return ($props.Count -eq 0)
+}
+
+function Cleanup-PolicyPathTree {
+    param([string]$LeafPath)
+
+    if (Test-RegistryKeyIsEmpty -Path $LeafPath) {
+        Remove-Item -Path $LeafPath -Force -ErrorAction SilentlyContinue
+    }
+
+    $parent = Split-Path -Path $LeafPath -Parent
+    if ($parent -and (Test-Path -Path $parent) -and (Test-RegistryKeyIsEmpty -Path $parent)) {
+        Remove-Item -Path $parent -Force -ErrorAction SilentlyContinue
     }
 }
 
@@ -142,6 +171,7 @@ function Set-DnsSettings {
             return $false
         }
         $resolvedMode = 'secure'
+        Ensure-PolicyPathExists -Path $script:registryPath
         Set-ItemProperty -Path $script:registryPath -Name 'DnsOverHttpsTemplates' -Value $DnsTemplates -Type String -Force
         if ($script:registryPath -eq $machineRegistryPath) {
             Remove-ItemProperty -Path $userRegistryPath -Name 'DnsOverHttpsTemplates' -ErrorAction SilentlyContinue
@@ -154,6 +184,7 @@ function Set-DnsSettings {
         }
     }
 
+    Ensure-PolicyPathExists -Path $script:registryPath
     Set-ItemProperty -Path $script:registryPath -Name 'DnsOverHttpsMode' -Value $resolvedMode -Type String -Force
     if ($script:registryPath -eq $machineRegistryPath) {
         Remove-ItemProperty -Path $userRegistryPath -Name 'DnsOverHttpsMode' -ErrorAction SilentlyContinue
@@ -165,6 +196,8 @@ function Remove-ManagedProperty {
     param([string]$Key)
     Remove-ItemProperty -Path $machineRegistryPath -Name $Key -ErrorAction SilentlyContinue
     Remove-ItemProperty -Path $userRegistryPath -Name $Key -ErrorAction SilentlyContinue
+    Cleanup-PolicyPathTree -LeafPath $machineRegistryPath
+    Cleanup-PolicyPathTree -LeafPath $userRegistryPath
 }
 
 function Detect-DnsPresetName {
@@ -719,6 +752,7 @@ $applyButton.Add_Click({
     foreach ($key in $uniqueKeys) {
         if ($selectedFeatures.ContainsKey($key)) {
             $feature = $selectedFeatures[$key]
+            Ensure-PolicyPathExists -Path $script:registryPath
             Set-ItemProperty -Path $script:registryPath -Name $feature.Key -Value $feature.Value -Type $feature.Type -Force
             if ($script:registryPath -eq $machineRegistryPath) {
                 Remove-ItemProperty -Path $userRegistryPath -Name $key -ErrorAction SilentlyContinue
@@ -732,6 +766,9 @@ $applyButton.Add_Click({
     if (-not (Set-DnsSettings -DnsMode ([string]$dnsDropdown.SelectedItem) -DnsTemplates $dnsTemplateBox.Text)) {
         return
     }
+
+    Cleanup-PolicyPathTree -LeafPath $machineRegistryPath
+    Cleanup-PolicyPathTree -LeafPath $userRegistryPath
 
     $statusLabel.Text = "Applied to $($scopeDropdown.SelectedItem). Restart Brave."
     [System.Windows.Forms.MessageBox]::Show(
@@ -760,6 +797,8 @@ $resetButton.Add_Click({
     }
     Remove-ManagedProperty -Key 'DnsOverHttpsMode'
     Remove-ManagedProperty -Key 'DnsOverHttpsTemplates'
+    Cleanup-PolicyPathTree -LeafPath $machineRegistryPath
+    Cleanup-PolicyPathTree -LeafPath $userRegistryPath
 
     foreach ($cb in $script:allCheckboxes) {
         $cb.Checked = $false
