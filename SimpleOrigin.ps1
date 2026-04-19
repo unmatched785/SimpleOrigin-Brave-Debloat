@@ -198,7 +198,9 @@ function Set-DnsSettings {
 
     $resolvedMode = $DnsMode
 
-    if ([string]::IsNullOrWhiteSpace($DnsMode)) {
+    if ([string]::IsNullOrWhiteSpace($DnsMode) -or $DnsMode -eq 'browser default (unset)') {
+        Remove-ManagedProperty -Key 'DnsOverHttpsMode'
+        Remove-ManagedProperty -Key 'DnsOverHttpsTemplates'
         return $true
     }
 
@@ -533,8 +535,8 @@ $dnsDropdown.Location = New-Object System.Drawing.Point(420, 40)
 $dnsDropdown.Size = New-Object System.Drawing.Size(170, 28)
 $dnsDropdown.DropDownStyle = [System.Windows.Forms.ComboBoxStyle]::DropDownList
 $dnsDropdown.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
-$dnsDropdown.Items.AddRange(@('off','automatic','secure','custom'))
-$dnsDropdown.SelectedItem = 'off'
+$dnsDropdown.Items.AddRange(@('browser default (unset)','off','automatic','secure','custom'))
+$dnsDropdown.SelectedItem = 'browser default (unset)'
 $dnsGroup.Controls.Add($dnsDropdown)
 Register-ThemedControl $dnsDropdown
 
@@ -553,7 +555,7 @@ $dnsGroup.Controls.Add($dnsTemplateBox)
 Register-ThemedControl $dnsTemplateBox
 
 $dnsHintLabel = New-Object System.Windows.Forms.Label
-$dnsHintLabel.Text = 'Selecting a preset fills the template and switches Mode to custom.'
+$dnsHintLabel.Text = 'Browser default (unset) removes DoH policy. Selecting a preset fills the template and switches Mode to custom.'
 $dnsHintLabel.Location = New-Object System.Drawing.Point(20, 76)
 $dnsHintLabel.Size = New-Object System.Drawing.Size(700, 18)
 $dnsGroup.Controls.Add($dnsHintLabel)
@@ -808,16 +810,16 @@ function Initialize-CurrentSettings {
     }
     elseif ($dnsModePolicy -and -not [string]::IsNullOrWhiteSpace($dnsModePolicy.Value)) {
         $modeValue = [string]$dnsModePolicy.Value
-        if (@('off','automatic','secure','custom') -contains $modeValue) {
+        if (@('browser default (unset)','off','automatic','secure','custom') -contains $modeValue) {
             $dnsDropdown.SelectedItem = $modeValue
         }
         else {
-            $dnsDropdown.SelectedItem = 'off'
+            $dnsDropdown.SelectedItem = 'browser default (unset)'
         }
         $detectedScope = [string]$dnsModePolicy.Scope
     }
     else {
-        $dnsDropdown.SelectedItem = 'off'
+        $dnsDropdown.SelectedItem = 'browser default (unset)'
     }
 
     $dnsPresetDropdown.SelectedItem = Detect-DnsPresetName -Template $dnsTemplateBox.Text
@@ -928,7 +930,7 @@ $resetButton.Add_Click({
     foreach ($cb in $script:allCheckboxes) {
         $cb.Checked = $false
     }
-    $dnsDropdown.SelectedItem = 'off'
+    $dnsDropdown.SelectedItem = 'browser default (unset)'
     $dnsPresetDropdown.SelectedItem = 'Manual'
     $dnsTemplateBox.Text = ''
     $presetDropdown.SelectedIndex = 0
@@ -948,7 +950,7 @@ $exportButton.Add_Click({
     }
 
     $payload = [ordered]@{
-        AppVersion   = '0.1.0'
+        AppVersion   = '0.2.1'
         Preset       = [string]$presetDropdown.SelectedItem
         FeatureIds   = @((Get-SelectedFeatureObjects) | ForEach-Object { $_.Id })
         FeatureKeys  = @((Get-SelectedFeatureObjects) | ForEach-Object { $_.Key })
