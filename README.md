@@ -1,6 +1,6 @@
 # Simple Origin
 
-Simple Origin is a Windows PowerShell GUI for configuring **Brave managed policies**.
+Simple Origin is a Windows PowerShell GUI for configuring **Brave managed policies** on **regular Brave**.
 
 It gives you:
 
@@ -9,11 +9,18 @@ It gives you:
 - DNS-over-HTTPS presets
 - import/export for repeatable setups
 
-## What this is
+## What this project is
 
 Simple Origin is a **policy UI for regular Brave**.
 
-It aims to get close to **Brave Origin upgrade-like behavior** through managed policies. It does **not** modify Brave binaries, and it does **not** reproduce the separate compiled-out standalone build.
+Its goal is to get close to **Brave Origin-like feature reduction** using **officially supported Brave / Chromium policy surfaces**. It does **not** patch Brave binaries, and it does **not** try to reproduce the separate standalone Brave Origin build.
+
+## Why the Brave Origin context matters
+
+Brave Origin itself is an official minimal Brave variant / upgrade.  
+Simple Origin is **not** that product.
+
+This repo exists for users who want a cleaner, more controlled **regular Brave** setup through managed policies, while staying on the documented configuration path that Brave already supports.
 
 ## Included presets
 
@@ -25,7 +32,7 @@ This combines an Origin-like Brave feature reduction set with a practical privac
 It is the best starting point for most users who want a cleaner Brave configuration without manually selecting every toggle.
 
 ### Origin
-The closest preset to **Brave Origin upgrade-like behavior** using managed policies.
+The closest preset to **Brave Origin-like behavior** using managed policies.
 
 It focuses on Brave feature removal and core telemetry reduction without bundling extra hardening choices that go beyond that scope.
 
@@ -44,12 +51,25 @@ It focuses on the parts that map cleanly to managed policies, such as:
 ### Custom
 Manual mode. Choose each policy toggle yourself.
 
-## Scope recommendation
+## Write scope behavior
 
 **Recommended default: User (HKCU).**
 
-Use **User (HKCU) — Recommended** for most personal PCs.
+Use **User (HKCU) — Recommended** for most personal PCs.  
 Use **Machine (HKLM)** only when you intentionally want system-wide Brave policy for all users on the device.
+
+### v0.3.0 scope behavior
+
+In v0.3.0, **Apply is scope-aware**.
+
+For the keys managed by this tool, Apply now tries to make the **selected scope authoritative** by:
+
+1. writing the selected state to the chosen scope, and
+2. clearing the same managed keys from the other scope when possible
+
+This avoids stale mixed HKCU/HKLM states where the UI says one thing but Brave still prefers another because of policy precedence.
+
+If Machine-scope keys cannot be cleared while writing to User scope, Simple Origin will warn you that Brave may still prefer the Machine values.
 
 ## DNS over HTTPS presets
 
@@ -64,7 +84,42 @@ Included presets:
 - NextDNS Public
 - NextDNS Custom Profile
 
-Selecting a DNS preset fills the template URL and switches the mode to `custom`.
+Selecting a DNS preset fills the template URL and switches the UI mode to `custom`.
+
+### DoH behavior in this project
+
+- `browser default (unset)` removes the tool-managed DoH policy values
+- `custom` means the UI will write a DoH template and set the managed mode needed for template-based DoH
+- preset selection is just a convenience layer over the same policy fields
+
+## Policy coverage and limits
+
+This project is **managed-policy first**.
+
+That means:
+
+- it only exposes settings that map cleanly to Brave / Chromium policy
+- it intentionally avoids pretending that every Brave setting has a safe policy equivalent
+- it prefers correctness over “more toggles”
+
+### Important note about Brave Shields
+
+v0.3.0 intentionally **does not** expose a global **Disable Brave Shields** toggle.
+
+The Brave policy surface for Shields uses **site lists**, not a true “disable Shields everywhere” global policy.  
+Because of that, exposing a fake global toggle would be misleading.
+
+A future release may add a **site-specific Shields allow/disable list editor**, but that is separate from a global toggle.
+
+## Compatibility
+
+Brave supports Chromium policies plus Brave-specific policies, but **policy availability depends on Brave version**.
+
+Because of that:
+
+- some newer Brave-specific policies may only work on newer Brave builds
+- `brave://policy` is the best place to verify what actually took effect
+- unsupported policy keys may not show or may simply be ignored by older versions
 
 ## Running locally
 
@@ -95,12 +150,15 @@ powershell -NoProfile -ExecutionPolicy Bypass -Command "iwr 'https://raw.githubu
 - Restart Brave after applying settings.
 - Verify results in `brave://policy` if needed.
 - **Reset Managed Policies** removes the Brave policy values touched by this tool from both HKCU and HKLM.
-- This tool is designed around managed policies first. Some Brave settings do not map cleanly to managed policies and are therefore not forced by this project.
+- If you declined elevation, User-scope Apply still works, but clearing conflicting Machine-scope values may fail.
+- This tool does not modify Brave binaries and does not try to impersonate the separate Brave Origin product.
 
 ## Roadmap
 
-Planned next direction:
+Near-term follow-up items after v0.3.0:
 
-- refine preset behavior further
-- improve preset-to-current-state detection
-- investigate a future **experimental** layer for non-policy Brave settings that cannot be enforced safely through managed policies alone
+- deferred elevation instead of admin prompt on launch
+- better mixed-scope conflict reporting
+- site-specific Brave Shields list management
+- clearer per-policy compatibility / minimum-version notes
+- possible future **experimental** layer for non-policy Brave settings that cannot be enforced safely through managed policies
