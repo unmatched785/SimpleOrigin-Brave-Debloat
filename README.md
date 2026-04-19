@@ -1,53 +1,58 @@
 # Simple Origin
 
-Simple Origin is a Windows PowerShell GUI for configuring **Brave managed policies** with:
+Simple Origin is a Windows PowerShell GUI for configuring **Brave managed policies**.
 
-- one-by-one feature toggles
-- an **Origin** preset that aims to match **Brave Origin upgrade** as closely as policy control allows
-- DNS-over-HTTPS presets
-- JSON import/export
+It focuses on three things:
+
+- one-by-one policy toggles
+- a built-in **Origin** preset for an Origin-upgrade-like setup
+- a built-in **Hardening** preset for a stricter privacy setup
 
 ## What it is
 
 Simple Origin is a **policy UI for regular Brave**.
 
-It is designed to get close to **Brave Origin upgrade mode**, not to reproduce the separate **Brave Origin standalone** build.
+It aims to get close to **Brave Origin upgrade-like behavior** through managed policies. It does **not** modify Brave binaries, and it does **not** reproduce the separate compiled-out standalone build.
 
-That means:
-
-- it can disable many Brave features through managed policies
-- it cannot compile features out of the Brave binary
-- it cannot become a true standalone Origin replacement without a separate Brave build
-
-## Included preset
+## Included presets
 
 ### Origin
-The **Origin** preset targets the currently documented Brave Origin **upgrade-like** feature set through policy control:
+The **Origin** preset is the closest preset to Brave Origin upgrade-like behavior.
 
-- Leo / AI Chat
-- News
-- Playlist
-- Rewards
-- Speedreader
-- P3A / daily usage ping / metrics reporting
-- Talk
-- Tor
-- VPN
-- Wallet
-- Wayback Machine
-- Web Discovery
+It focuses on Brave feature removal and telemetry reduction without bundling extra hardening choices that go beyond that scope.
 
-It intentionally does **not** bundle unrelated hardening choices like QUIC disabling, third-party cookie blocking, password manager disabling, or DoH forcing, because those are not core Brave Origin behaviors.
+### Hardening
+The **Hardening** preset is stricter.
+
+It adds privacy-oriented controls such as:
+
+- Safe Browsing reporting off
+- URL data collection off
+- feedback surveys off
+- browser sign-in off
+- Global Privacy Control on
+- Do Not Track on
+- WebRTC non-proxied UDP restriction
+- QUIC off
+- third-party cookies blocked
+- Sync off
+- extra Brave UI/bloat reduction
+
+Use **Origin** when you want the closest Origin-like preset.
+Use **Hardening** when you want a broader privacy-oriented preset.
 
 ## Scope recommendation
 
 **Recommended default: User (HKCU).**
 
-Use **User (HKCU) — Recommended** for most personal PCs.  
+Use **User (HKCU) — Recommended** for most personal PCs.
 Use **Machine (HKLM)** only when you intentionally want system-wide Brave policy for all users on the device.
 
-## DNS presets included
+## DNS over HTTPS presets
 
+Included presets:
+
+- Manual
 - Cloudflare (1.1.1.1)
 - Cloudflare Security (1.1.1.2)
 - Cloudflare Family (1.1.1.3)
@@ -55,28 +60,27 @@ Use **Machine (HKLM)** only when you intentionally want system-wide Brave policy
 - Google Public DNS (8.8.8.8)
 - NextDNS Public
 - NextDNS Custom Profile
-- Manual
 
-Selecting a DNS preset fills the DoH template and switches the mode to `custom`.
+Selecting a DNS preset fills the template URL and switches the mode to `custom`.
 
 ## Running locally
 
-Open PowerShell and run:
+Open PowerShell in the same folder and run:
 
 ```powershell
 Set-ExecutionPolicy -Scope Process Bypass
 .\SimpleOrigin.ps1
 ```
 
-## One-liner for GitHub raw hosting
+## One-line GitHub raw launch
 
-Public repo example:
+For a public repository:
 
 ```powershell
 iwr "https://raw.githubusercontent.com/unmatched785/SimpleOrigin/main/SimpleOrigin.ps1" -OutFile "SimpleOrigin.ps1"; .\SimpleOrigin.ps1
 ```
 
-If Windows blocks local script execution, use:
+If Windows blocks direct local script execution:
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -Command "iwr 'https://raw.githubusercontent.com/unmatched785/SimpleOrigin/main/SimpleOrigin.ps1' -OutFile $env:TEMP\SimpleOrigin.ps1; & $env:TEMP\SimpleOrigin.ps1"
@@ -84,6 +88,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -Command "iwr 'https://raw.githubu
 
 ## Notes
 
-- Light theme is the default. Dark theme is optional via the top-right toggle.
-- After applying settings, restart Brave and verify with `brave://policy`.
+- Light theme is the default. Dark mode is optional via the top-right toggle.
+- Restart Brave after applying settings.
+- Verify results in `brave://policy` if needed.
 - **Reset Managed Policies** removes the Brave policy values touched by this tool from both HKCU and HKLM.
