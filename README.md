@@ -1,0 +1,2 @@
+# SimpleOrigin
+brave origin
