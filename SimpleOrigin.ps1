@@ -17,7 +17,7 @@ if (-not $NoAdminRelaunch -and -not (Test-IsAdmin)) {
         exit
     } catch {
         [System.Windows.Forms.MessageBox]::Show(
-            "Administrator rights were not granted. The app will continue, but Apply/Reset may fail if machine-level policy writes are blocked.",
+            "Administrator rights were not granted. The app will continue, but machine-level Apply/Reset may fail.",
             "Simple Origin",
             [System.Windows.Forms.MessageBoxButtons]::OK,
             [System.Windows.Forms.MessageBoxIcon]::Warning
@@ -35,57 +35,53 @@ foreach ($path in @($machineRegistryPath, $userRegistryPath)) {
     }
 }
 
-# ---------------------------------------------------------------------------
-# Feature catalog
-# ---------------------------------------------------------------------------
-
 $featureCatalog = @(
-    @{ Id = 'telemetry.metrics';           Name = 'Disable Metrics Reporting';        Key = 'MetricsReportingEnabled';              Value = 0;                                Type = 'DWord'; Category = 'Telemetry'; Origin = $true  },
-    @{ Id = 'telemetry.safebrowsing_rep';  Name = 'Disable Safe Browsing Reporting';  Key = 'SafeBrowsingExtendedReportingEnabled'; Value = 0;                                Type = 'DWord'; Category = 'Telemetry'; Origin = $false },
-    @{ Id = 'telemetry.url_data';          Name = 'Disable URL Data Collection';      Key = 'UrlKeyedAnonymizedDataCollectionEnabled'; Value = 0;                           Type = 'DWord'; Category = 'Telemetry'; Origin = $false },
-    @{ Id = 'telemetry.feedback';          Name = 'Disable Feedback Surveys';         Key = 'FeedbackSurveysEnabled';               Value = 0;                                Type = 'DWord'; Category = 'Telemetry'; Origin = $false },
-    @{ Id = 'telemetry.p3a';               Name = 'Disable P3A Analytics';            Key = 'BraveP3AEnabled';                     Value = 0;                                Type = 'DWord'; Category = 'Telemetry'; Origin = $true  },
-    @{ Id = 'telemetry.stats_ping';        Name = 'Disable Stats Ping';               Key = 'BraveStatsPingEnabled';               Value = 0;                                Type = 'DWord'; Category = 'Telemetry'; Origin = $true  },
+    @{ Id = 'telemetry.metrics';           Name = 'Disable Metrics Reporting';        Key = 'MetricsReportingEnabled';                 Value = 0;                           Type = 'DWord'; Category = 'Telemetry';   Origin = $true  },
+    @{ Id = 'telemetry.safebrowsing_rep';  Name = 'Disable Safe Browsing Reporting';  Key = 'SafeBrowsingExtendedReportingEnabled';    Value = 0;                           Type = 'DWord'; Category = 'Telemetry';   Origin = $false },
+    @{ Id = 'telemetry.url_data';          Name = 'Disable URL Data Collection';      Key = 'UrlKeyedAnonymizedDataCollectionEnabled'; Value = 0;                           Type = 'DWord'; Category = 'Telemetry';   Origin = $false },
+    @{ Id = 'telemetry.feedback';          Name = 'Disable Feedback Surveys';         Key = 'FeedbackSurveysEnabled';                  Value = 0;                           Type = 'DWord'; Category = 'Telemetry';   Origin = $false },
+    @{ Id = 'telemetry.p3a';               Name = 'Disable P3A Analytics';            Key = 'BraveP3AEnabled';                        Value = 0;                           Type = 'DWord'; Category = 'Telemetry';   Origin = $true  },
+    @{ Id = 'telemetry.stats_ping';        Name = 'Disable Stats Ping';               Key = 'BraveStatsPingEnabled';                  Value = 0;                           Type = 'DWord'; Category = 'Telemetry';   Origin = $true  },
 
-    @{ Id = 'privacy.safe_browsing';       Name = 'Disable Safe Browsing';            Key = 'SafeBrowsingProtectionLevel';         Value = 0;                                Type = 'DWord'; Category = 'Privacy';   Origin = $false },
-    @{ Id = 'privacy.autofill_addr';       Name = 'Disable Autofill (Addresses)';     Key = 'AutofillAddressEnabled';              Value = 0;                                Type = 'DWord'; Category = 'Privacy';   Origin = $false },
-    @{ Id = 'privacy.autofill_cards';      Name = 'Disable Autofill (Credit Cards)';  Key = 'AutofillCreditCardEnabled';           Value = 0;                                Type = 'DWord'; Category = 'Privacy';   Origin = $false },
-    @{ Id = 'privacy.password_manager';    Name = 'Disable Password Manager';         Key = 'PasswordManagerEnabled';              Value = 0;                                Type = 'DWord'; Category = 'Privacy';   Origin = $false },
-    @{ Id = 'privacy.browser_signin';      Name = 'Disable Browser Sign-in';          Key = 'BrowserSignin';                       Value = 0;                                Type = 'DWord'; Category = 'Privacy';   Origin = $false },
-    @{ Id = 'privacy.dnt';                 Name = 'Enable Do Not Track';              Key = 'EnableDoNotTrack';                    Value = 1;                                Type = 'DWord'; Category = 'Privacy';   Origin = $false },
-    @{ Id = 'privacy.gpc';                 Name = 'Enable Global Privacy Control';    Key = 'BraveGlobalPrivacyControlEnabled';    Value = 1;                                Type = 'DWord'; Category = 'Privacy';   Origin = $false },
-    @{ Id = 'privacy.webrtc';              Name = 'Disable WebRTC IP Leak';           Key = 'WebRtcIPHandling';                    Value = 'disable_non_proxied_udp';         Type = 'String'; Category = 'Privacy';  Origin = $false },
-    @{ Id = 'privacy.quic';                Name = 'Disable QUIC Protocol';            Key = 'QuicAllowed';                         Value = 0;                                Type = 'DWord'; Category = 'Privacy';   Origin = $false },
-    @{ Id = 'privacy.third_party_cookies'; Name = 'Block Third Party Cookies';        Key = 'BlockThirdPartyCookies';              Value = 1;                                Type = 'DWord'; Category = 'Privacy';   Origin = $false },
-    @{ Id = 'privacy.safe_search';         Name = 'Force Google SafeSearch';          Key = 'ForceGoogleSafeSearch';               Value = 1;                                Type = 'DWord'; Category = 'Privacy';   Origin = $false },
-    @{ Id = 'privacy.disable_incognito';   Name = 'Disable Incognito Mode';           Key = 'IncognitoModeAvailability';           Value = 1;                                Type = 'DWord'; Category = 'Privacy';   Origin = $false; ExclusiveGroup = 'incognito_mode' },
-    @{ Id = 'privacy.force_incognito';     Name = 'Force Incognito Mode';             Key = 'IncognitoModeAvailability';           Value = 2;                                Type = 'DWord'; Category = 'Privacy';   Origin = $false; ExclusiveGroup = 'incognito_mode' },
+    @{ Id = 'privacy.safe_browsing';       Name = 'Disable Safe Browsing';            Key = 'SafeBrowsingProtectionLevel';            Value = 0;                           Type = 'DWord'; Category = 'Privacy';     Origin = $false },
+    @{ Id = 'privacy.autofill_addr';       Name = 'Disable Autofill (Addresses)';     Key = 'AutofillAddressEnabled';                 Value = 0;                           Type = 'DWord'; Category = 'Privacy';     Origin = $false },
+    @{ Id = 'privacy.autofill_cards';      Name = 'Disable Autofill (Credit Cards)';  Key = 'AutofillCreditCardEnabled';              Value = 0;                           Type = 'DWord'; Category = 'Privacy';     Origin = $false },
+    @{ Id = 'privacy.password_manager';    Name = 'Disable Password Manager';         Key = 'PasswordManagerEnabled';                 Value = 0;                           Type = 'DWord'; Category = 'Privacy';     Origin = $false },
+    @{ Id = 'privacy.browser_signin';      Name = 'Disable Browser Sign-in';          Key = 'BrowserSignin';                          Value = 0;                           Type = 'DWord'; Category = 'Privacy';     Origin = $false },
+    @{ Id = 'privacy.dnt';                 Name = 'Enable Do Not Track';              Key = 'EnableDoNotTrack';                       Value = 1;                           Type = 'DWord'; Category = 'Privacy';     Origin = $false },
+    @{ Id = 'privacy.gpc';                 Name = 'Enable Global Privacy Control';    Key = 'BraveGlobalPrivacyControlEnabled';       Value = 1;                           Type = 'DWord'; Category = 'Privacy';     Origin = $false },
+    @{ Id = 'privacy.webrtc';              Name = 'Disable WebRTC IP Leak';           Key = 'WebRtcIPHandling';                       Value = 'disable_non_proxied_udp';    Type = 'String'; Category = 'Privacy';    Origin = $false },
+    @{ Id = 'privacy.quic';                Name = 'Disable QUIC Protocol';            Key = 'QuicAllowed';                            Value = 0;                           Type = 'DWord'; Category = 'Privacy';     Origin = $false },
+    @{ Id = 'privacy.third_party_cookies'; Name = 'Block Third Party Cookies';        Key = 'BlockThirdPartyCookies';                 Value = 1;                           Type = 'DWord'; Category = 'Privacy';     Origin = $false },
+    @{ Id = 'privacy.safe_search';         Name = 'Force Google SafeSearch';          Key = 'ForceGoogleSafeSearch';                  Value = 1;                           Type = 'DWord'; Category = 'Privacy';     Origin = $false },
+    @{ Id = 'privacy.disable_incognito';   Name = 'Disable Incognito Mode';           Key = 'IncognitoModeAvailability';              Value = 1;                           Type = 'DWord'; Category = 'Privacy';     Origin = $false; ExclusiveGroup = 'incognito_mode' },
+    @{ Id = 'privacy.force_incognito';     Name = 'Force Incognito Mode';             Key = 'IncognitoModeAvailability';              Value = 2;                           Type = 'DWord'; Category = 'Privacy';     Origin = $false; ExclusiveGroup = 'incognito_mode' },
 
-    @{ Id = 'brave.rewards';               Name = 'Disable Brave Rewards';            Key = 'BraveRewardsDisabled';                Value = 1;                                Type = 'DWord'; Category = 'Brave';     Origin = $true  },
-    @{ Id = 'brave.wallet';                Name = 'Disable Brave Wallet';             Key = 'BraveWalletDisabled';                 Value = 1;                                Type = 'DWord'; Category = 'Brave';     Origin = $true  },
-    @{ Id = 'brave.vpn';                   Name = 'Disable Brave VPN';                Key = 'BraveVPNDisabled';                    Value = 1;                                Type = 'DWord'; Category = 'Brave';     Origin = $true  },
-    @{ Id = 'brave.ai_chat';               Name = 'Disable Brave AI Chat';            Key = 'BraveAIChatEnabled';                  Value = 0;                                Type = 'DWord'; Category = 'Brave';     Origin = $true  },
-    @{ Id = 'brave.shields';               Name = 'Disable Brave Shields';            Key = 'BraveShieldsDisabledForUrls';         Value = '["https://*", "http://*"]';      Type = 'String'; Category = 'Brave';    Origin = $false },
-    @{ Id = 'brave.news';                  Name = 'Disable Brave News';               Key = 'BraveNewsDisabled';                   Value = 1;                                Type = 'DWord'; Category = 'Brave';     Origin = $true  },
-    @{ Id = 'brave.talk';                  Name = 'Disable Brave Talk';               Key = 'BraveTalkDisabled';                   Value = 1;                                Type = 'DWord'; Category = 'Brave';     Origin = $true  },
-    @{ Id = 'brave.playlist';              Name = 'Disable Brave Playlist';           Key = 'BravePlaylistEnabled';                Value = 0;                                Type = 'DWord'; Category = 'Brave';     Origin = $true  },
-    @{ Id = 'brave.web_discovery';         Name = 'Disable Web Discovery';            Key = 'BraveWebDiscoveryEnabled';            Value = 0;                                Type = 'DWord'; Category = 'Brave';     Origin = $true  },
-    @{ Id = 'brave.speedreader';           Name = 'Disable Speedreader';              Key = 'BraveSpeedreaderEnabled';             Value = 0;                                Type = 'DWord'; Category = 'Brave';     Origin = $true  },
-    @{ Id = 'brave.tor';                   Name = 'Disable Tor';                      Key = 'TorDisabled';                         Value = 1;                                Type = 'DWord'; Category = 'Brave';     Origin = $true  },
-    @{ Id = 'brave.sync';                  Name = 'Disable Sync';                     Key = 'SyncDisabled';                        Value = 1;                                Type = 'DWord'; Category = 'Brave';     Origin = $false },
+    @{ Id = 'brave.rewards';               Name = 'Disable Brave Rewards';            Key = 'BraveRewardsDisabled';                   Value = 1;                           Type = 'DWord'; Category = 'Brave';       Origin = $true  },
+    @{ Id = 'brave.wallet';                Name = 'Disable Brave Wallet';             Key = 'BraveWalletDisabled';                    Value = 1;                           Type = 'DWord'; Category = 'Brave';       Origin = $true  },
+    @{ Id = 'brave.vpn';                   Name = 'Disable Brave VPN';                Key = 'BraveVPNDisabled';                       Value = 1;                           Type = 'DWord'; Category = 'Brave';       Origin = $true  },
+    @{ Id = 'brave.ai_chat';               Name = 'Disable Brave AI Chat';            Key = 'BraveAIChatEnabled';                     Value = 0;                           Type = 'DWord'; Category = 'Brave';       Origin = $true  },
+    @{ Id = 'brave.shields';               Name = 'Disable Brave Shields';            Key = 'BraveShieldsDisabledForUrls';            Value = '["https://*", "http://*"]'; Type = 'String'; Category = 'Brave';      Origin = $false },
+    @{ Id = 'brave.news';                  Name = 'Disable Brave News';               Key = 'BraveNewsDisabled';                      Value = 1;                           Type = 'DWord'; Category = 'Brave';       Origin = $true  },
+    @{ Id = 'brave.talk';                  Name = 'Disable Brave Talk';               Key = 'BraveTalkDisabled';                      Value = 1;                           Type = 'DWord'; Category = 'Brave';       Origin = $true  },
+    @{ Id = 'brave.playlist';              Name = 'Disable Brave Playlist';           Key = 'BravePlaylistEnabled';                   Value = 0;                           Type = 'DWord'; Category = 'Brave';       Origin = $true  },
+    @{ Id = 'brave.web_discovery';         Name = 'Disable Web Discovery';            Key = 'BraveWebDiscoveryEnabled';               Value = 0;                           Type = 'DWord'; Category = 'Brave';       Origin = $true  },
+    @{ Id = 'brave.speedreader';           Name = 'Disable Speedreader';              Key = 'BraveSpeedreaderEnabled';                Value = 0;                           Type = 'DWord'; Category = 'Brave';       Origin = $true  },
+    @{ Id = 'brave.tor';                   Name = 'Disable Tor';                      Key = 'TorDisabled';                            Value = 1;                           Type = 'DWord'; Category = 'Brave';       Origin = $true  },
+    @{ Id = 'brave.sync';                  Name = 'Disable Sync';                     Key = 'SyncDisabled';                           Value = 1;                           Type = 'DWord'; Category = 'Brave';       Origin = $false },
 
-    @{ Id = 'perf.background';             Name = 'Disable Background Mode';          Key = 'BackgroundModeEnabled';               Value = 0;                                Type = 'DWord'; Category = 'Performance'; Origin = $false },
-    @{ Id = 'perf.media_recs';             Name = 'Disable Media Recommendations';    Key = 'MediaRecommendationsEnabled';         Value = 0;                                Type = 'DWord'; Category = 'Performance'; Origin = $false },
-    @{ Id = 'perf.shopping';               Name = 'Disable Shopping List';            Key = 'ShoppingListEnabled';                 Value = 0;                                Type = 'DWord'; Category = 'Performance'; Origin = $false },
-    @{ Id = 'perf.pdf_external';           Name = 'Always Open PDF Externally';       Key = 'AlwaysOpenPdfExternally';             Value = 1;                                Type = 'DWord'; Category = 'Performance'; Origin = $false },
-    @{ Id = 'perf.translate';              Name = 'Disable Translate';                Key = 'TranslateEnabled';                    Value = 0;                                Type = 'DWord'; Category = 'Performance'; Origin = $false },
-    @{ Id = 'perf.spellcheck';             Name = 'Disable Spellcheck';               Key = 'SpellcheckEnabled';                   Value = 0;                                Type = 'DWord'; Category = 'Performance'; Origin = $false },
-    @{ Id = 'perf.promotions';             Name = 'Disable Promotions';               Key = 'PromotionsEnabled';                   Value = 0;                                Type = 'DWord'; Category = 'Performance'; Origin = $false },
-    @{ Id = 'perf.search_suggest';         Name = 'Disable Search Suggestions';       Key = 'SearchSuggestEnabled';                Value = 0;                                Type = 'DWord'; Category = 'Performance'; Origin = $false },
-    @{ Id = 'perf.printing';               Name = 'Disable Printing';                 Key = 'PrintingEnabled';                     Value = 0;                                Type = 'DWord'; Category = 'Performance'; Origin = $false },
-    @{ Id = 'perf.default_browser';        Name = 'Disable Default Browser Prompt';   Key = 'DefaultBrowserSettingEnabled';        Value = 0;                                Type = 'DWord'; Category = 'Performance'; Origin = $false },
-    @{ Id = 'perf.devtools';               Name = 'Disable Developer Tools';          Key = 'DeveloperToolsAvailability';          Value = 2;                                Type = 'DWord'; Category = 'Performance'; Origin = $false },
-    @{ Id = 'perf.wayback';                Name = 'Disable Wayback Machine';          Key = 'BraveWaybackMachineEnabled';          Value = 0;                                Type = 'DWord'; Category = 'Performance'; Origin = $true  }
+    @{ Id = 'perf.background';             Name = 'Disable Background Mode';          Key = 'BackgroundModeEnabled';                  Value = 0;                           Type = 'DWord'; Category = 'Performance'; Origin = $false },
+    @{ Id = 'perf.media_recs';             Name = 'Disable Media Recommendations';    Key = 'MediaRecommendationsEnabled';            Value = 0;                           Type = 'DWord'; Category = 'Performance'; Origin = $false },
+    @{ Id = 'perf.shopping';               Name = 'Disable Shopping List';            Key = 'ShoppingListEnabled';                    Value = 0;                           Type = 'DWord'; Category = 'Performance'; Origin = $false },
+    @{ Id = 'perf.pdf_external';           Name = 'Always Open PDF Externally';       Key = 'AlwaysOpenPdfExternally';                Value = 1;                           Type = 'DWord'; Category = 'Performance'; Origin = $false },
+    @{ Id = 'perf.translate';              Name = 'Disable Translate';                Key = 'TranslateEnabled';                       Value = 0;                           Type = 'DWord'; Category = 'Performance'; Origin = $false },
+    @{ Id = 'perf.spellcheck';             Name = 'Disable Spellcheck';               Key = 'SpellcheckEnabled';                      Value = 0;                           Type = 'DWord'; Category = 'Performance'; Origin = $false },
+    @{ Id = 'perf.promotions';             Name = 'Disable Promotions';               Key = 'PromotionsEnabled';                      Value = 0;                           Type = 'DWord'; Category = 'Performance'; Origin = $false },
+    @{ Id = 'perf.search_suggest';         Name = 'Disable Search Suggestions';       Key = 'SearchSuggestEnabled';                   Value = 0;                           Type = 'DWord'; Category = 'Performance'; Origin = $false },
+    @{ Id = 'perf.printing';               Name = 'Disable Printing';                 Key = 'PrintingEnabled';                        Value = 0;                           Type = 'DWord'; Category = 'Performance'; Origin = $false },
+    @{ Id = 'perf.default_browser';        Name = 'Disable Default Browser Prompt';   Key = 'DefaultBrowserSettingEnabled';           Value = 0;                           Type = 'DWord'; Category = 'Performance'; Origin = $false },
+    @{ Id = 'perf.devtools';               Name = 'Disable Developer Tools';          Key = 'DeveloperToolsAvailability';             Value = 2;                           Type = 'DWord'; Category = 'Performance'; Origin = $false },
+    @{ Id = 'perf.wayback';                Name = 'Disable Wayback Machine';          Key = 'BraveWaybackMachineEnabled';             Value = 0;                           Type = 'DWord'; Category = 'Performance'; Origin = $true  }
 )
 
 $featureMap = @{}
@@ -96,6 +92,17 @@ foreach ($feature in $featureCatalog) {
 $presets = [ordered]@{
     'Custom' = @()
     'Origin' = ($featureCatalog | Where-Object { $_.Origin } | ForEach-Object { $_.Id })
+}
+
+$dohPresets = [ordered]@{
+    'Manual'                         = ''
+    'Cloudflare (1.1.1.1)'           = 'https://cloudflare-dns.com/dns-query'
+    'Cloudflare Security (1.1.1.2)'  = 'https://security.cloudflare-dns.com/dns-query'
+    'Cloudflare Family (1.1.1.3)'    = 'https://family.cloudflare-dns.com/dns-query'
+    'Quad9 Secure (9.9.9.9)'         = 'https://dns.quad9.net/dns-query'
+    'Google Public DNS (8.8.8.8)'    = 'https://dns.google/dns-query'
+    'NextDNS Public'                 = 'https://dns.nextdns.io'
+    'NextDNS Custom Profile'         = 'https://dns.nextdns.io/YOUR_PROFILE_ID'
 }
 
 function Get-PolicySetting {
@@ -136,17 +143,21 @@ function Set-DnsSettings {
         }
         $resolvedMode = 'secure'
         Set-ItemProperty -Path $script:registryPath -Name 'DnsOverHttpsTemplates' -Value $DnsTemplates -Type String -Force
-        if (Test-Path $userRegistryPath) {
+        if ($script:registryPath -eq $machineRegistryPath) {
             Remove-ItemProperty -Path $userRegistryPath -Name 'DnsOverHttpsTemplates' -ErrorAction SilentlyContinue
         }
     }
     else {
         Remove-ItemProperty -Path $script:registryPath -Name 'DnsOverHttpsTemplates' -ErrorAction SilentlyContinue
-        Remove-ItemProperty -Path $userRegistryPath -Name 'DnsOverHttpsTemplates' -ErrorAction SilentlyContinue
+        if ($script:registryPath -eq $machineRegistryPath) {
+            Remove-ItemProperty -Path $userRegistryPath -Name 'DnsOverHttpsTemplates' -ErrorAction SilentlyContinue
+        }
     }
 
     Set-ItemProperty -Path $script:registryPath -Name 'DnsOverHttpsMode' -Value $resolvedMode -Type String -Force
-    Remove-ItemProperty -Path $userRegistryPath -Name 'DnsOverHttpsMode' -ErrorAction SilentlyContinue
+    if ($script:registryPath -eq $machineRegistryPath) {
+        Remove-ItemProperty -Path $userRegistryPath -Name 'DnsOverHttpsMode' -ErrorAction SilentlyContinue
+    }
     return $true
 }
 
@@ -156,74 +167,143 @@ function Remove-ManagedProperty {
     Remove-ItemProperty -Path $userRegistryPath -Name $Key -ErrorAction SilentlyContinue
 }
 
-# ---------------------------------------------------------------------------
-# UI setup
-# ---------------------------------------------------------------------------
+function Detect-DnsPresetName {
+    param([string]$Template)
+
+    if ([string]::IsNullOrWhiteSpace($Template)) {
+        return 'Manual'
+    }
+
+    if ($Template -eq $dohPresets['NextDNS Public']) {
+        return 'NextDNS Public'
+    }
+    if ($Template -match '^https://dns\.nextdns\.io/[^/]+$') {
+        return 'NextDNS Custom Profile'
+    }
+
+    foreach ($presetName in $dohPresets.Keys) {
+        if ($presetName -eq 'Manual' -or $presetName -eq 'NextDNS Custom Profile') { continue }
+        if ($Template -eq [string]$dohPresets[$presetName]) {
+            return $presetName
+        }
+    }
+
+    return 'Manual'
+}
+
+$script:isDarkTheme = $true
+$script:themeControls = New-Object System.Collections.ArrayList
+$script:themePanels = New-Object System.Collections.ArrayList
+$script:sectionLabels = New-Object System.Collections.ArrayList
+$script:subheaderLabels = New-Object System.Collections.ArrayList
+$script:mutedLabels = New-Object System.Collections.ArrayList
+$script:actionButtons = @{}
+
+function Register-ThemedControl {
+    param($Control)
+    [void]$script:themeControls.Add($Control)
+}
+
+function Register-ThemedPanel {
+    param($Panel)
+    [void]$script:themePanels.Add($Panel)
+}
+
+function Register-SectionLabel {
+    param($Label)
+    [void]$script:sectionLabels.Add($Label)
+}
+
+function Register-SubheaderLabel {
+    param($Label)
+    [void]$script:subheaderLabels.Add($Label)
+}
+
+function Register-MutedLabel {
+    param($Label)
+    [void]$script:mutedLabels.Add($Label)
+}
 
 $form = New-Object System.Windows.Forms.Form
 $form.Text = 'Simple Origin'
-$form.ForeColor = [System.Drawing.Color]::White
-$form.Size = New-Object System.Drawing.Size(860, 900)
+$form.Size = New-Object System.Drawing.Size(1060, 1020)
+$form.MinimumSize = New-Object System.Drawing.Size(1060, 1020)
+$form.MaximumSize = New-Object System.Drawing.Size(1060, 1020)
 $form.StartPosition = 'CenterScreen'
-$form.BackColor = [System.Drawing.Color]::FromArgb(255, 25, 25, 25)
 $form.MaximizeBox = $false
 $form.FormBorderStyle = [System.Windows.Forms.FormBorderStyle]::FixedDialog
+$form.Font = New-Object System.Drawing.Font('Segoe UI', 9)
 
 $titleLabel = New-Object System.Windows.Forms.Label
 $titleLabel.Text = 'Simple Origin — Brave policy UI with an Origin preset'
 $titleLabel.Location = New-Object System.Drawing.Point(24, 18)
-$titleLabel.Size = New-Object System.Drawing.Size(560, 24)
-$titleLabel.Font = New-Object System.Drawing.Font('Segoe UI', 11, [System.Drawing.FontStyle]::Bold)
+$titleLabel.Size = New-Object System.Drawing.Size(760, 28)
+$titleLabel.Font = New-Object System.Drawing.Font('Segoe UI', 11.5, [System.Drawing.FontStyle]::Bold)
+$titleLabel.AutoEllipsis = $true
 $form.Controls.Add($titleLabel)
+Register-ThemedControl $titleLabel
 
 $subLabel = New-Object System.Windows.Forms.Label
-$subLabel.Text = 'Preset "Origin" targets Brave Origin upgrade-like feature parity, not the standalone compiled-out build.'
-$subLabel.Location = New-Object System.Drawing.Point(24, 44)
-$subLabel.Size = New-Object System.Drawing.Size(700, 18)
-$subLabel.ForeColor = [System.Drawing.Color]::Silver
+$subLabel.Text = 'Origin preset targets Brave Origin upgrade-like behavior. It does not reproduce the standalone compiled-out build.'
+$subLabel.Location = New-Object System.Drawing.Point(24, 46)
+$subLabel.Size = New-Object System.Drawing.Size(840, 20)
+$subLabel.AutoEllipsis = $true
 $form.Controls.Add($subLabel)
+Register-MutedLabel $subLabel
+
+$themeButton = New-Object System.Windows.Forms.Button
+$themeButton.Text = '☾'
+$themeButton.Location = New-Object System.Drawing.Point(965, 18)
+$themeButton.Size = New-Object System.Drawing.Size(52, 34)
+$themeButton.Font = New-Object System.Drawing.Font('Segoe UI Symbol', 12, [System.Drawing.FontStyle]::Bold)
+$themeButton.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
+$themeButton.TabStop = $false
+$form.Controls.Add($themeButton)
+Register-ThemedControl $themeButton
+$script:actionButtons['theme'] = $themeButton
 
 $presetLabel = New-Object System.Windows.Forms.Label
 $presetLabel.Text = 'Preset:'
-$presetLabel.Location = New-Object System.Drawing.Point(24, 74)
-$presetLabel.Size = New-Object System.Drawing.Size(45, 20)
+$presetLabel.Location = New-Object System.Drawing.Point(24, 80)
+$presetLabel.Size = New-Object System.Drawing.Size(52, 22)
 $form.Controls.Add($presetLabel)
+Register-ThemedControl $presetLabel
 
 $presetDropdown = New-Object System.Windows.Forms.ComboBox
-$presetDropdown.Location = New-Object System.Drawing.Point(76, 71)
-$presetDropdown.Size = New-Object System.Drawing.Size(200, 24)
+$presetDropdown.Location = New-Object System.Drawing.Point(82, 78)
+$presetDropdown.Size = New-Object System.Drawing.Size(220, 28)
 $presetDropdown.DropDownStyle = [System.Windows.Forms.ComboBoxStyle]::DropDownList
 $presetDropdown.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
-$presetDropdown.BackColor = [System.Drawing.Color]::FromArgb(255, 30, 30, 30)
-$presetDropdown.ForeColor = [System.Drawing.Color]::White
 $presetDropdown.Items.AddRange(@('Custom','Origin'))
 $presetDropdown.SelectedItem = 'Custom'
 $form.Controls.Add($presetDropdown)
+Register-ThemedControl $presetDropdown
 
 $applyPresetButton = New-Object System.Windows.Forms.Button
 $applyPresetButton.Text = 'Load Preset'
-$applyPresetButton.Location = New-Object System.Drawing.Point(286, 70)
-$applyPresetButton.Size = New-Object System.Drawing.Size(100, 26)
+$applyPresetButton.Location = New-Object System.Drawing.Point(312, 77)
+$applyPresetButton.Size = New-Object System.Drawing.Size(112, 30)
 $applyPresetButton.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
-$applyPresetButton.ForeColor = [System.Drawing.Color]::LightSkyBlue
 $form.Controls.Add($applyPresetButton)
+Register-ThemedControl $applyPresetButton
+$script:actionButtons['loadPreset'] = $applyPresetButton
 
 $scopeLabel = New-Object System.Windows.Forms.Label
 $scopeLabel.Text = 'Write scope:'
-$scopeLabel.Location = New-Object System.Drawing.Point(430, 74)
-$scopeLabel.Size = New-Object System.Drawing.Size(75, 20)
+$scopeLabel.Location = New-Object System.Drawing.Point(456, 80)
+$scopeLabel.Size = New-Object System.Drawing.Size(78, 22)
 $form.Controls.Add($scopeLabel)
+Register-ThemedControl $scopeLabel
 
 $scopeDropdown = New-Object System.Windows.Forms.ComboBox
-$scopeDropdown.Location = New-Object System.Drawing.Point(510, 71)
-$scopeDropdown.Size = New-Object System.Drawing.Size(140, 24)
+$scopeDropdown.Location = New-Object System.Drawing.Point(540, 78)
+$scopeDropdown.Size = New-Object System.Drawing.Size(170, 28)
 $scopeDropdown.DropDownStyle = [System.Windows.Forms.ComboBoxStyle]::DropDownList
 $scopeDropdown.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
-$scopeDropdown.BackColor = [System.Drawing.Color]::FromArgb(255, 30, 30, 30)
-$scopeDropdown.ForeColor = [System.Drawing.Color]::White
 $scopeDropdown.Items.AddRange(@('Machine (HKLM)','User (HKCU)'))
 $scopeDropdown.SelectedItem = 'Machine (HKLM)'
 $form.Controls.Add($scopeDropdown)
+Register-ThemedControl $scopeDropdown
 
 $script:allCheckboxes = @()
 $script:checkboxById = @{}
@@ -240,23 +320,24 @@ function New-SectionPanel {
     $panel = New-Object System.Windows.Forms.Panel
     $panel.Location = New-Object System.Drawing.Point($X, $Y)
     $panel.Size = New-Object System.Drawing.Size($Width, $Height)
-    $panel.BackColor = [System.Drawing.Color]::FromArgb(255, 35, 35, 35)
     $panel.BorderStyle = [System.Windows.Forms.BorderStyle]::FixedSingle
     $form.Controls.Add($panel)
+    Register-ThemedPanel $panel
 
     $label = New-Object System.Windows.Forms.Label
     $label.Text = $Title
     $label.Location = New-Object System.Drawing.Point(18, 10)
-    $label.Size = New-Object System.Drawing.Size(($Width - 36), 22)
+    $label.Size = New-Object System.Drawing.Size(($Width - 36), 24)
     $label.Font = New-Object System.Drawing.Font('Segoe UI', 10.5, [System.Drawing.FontStyle]::Bold)
-    $label.ForeColor = [System.Drawing.Color]::LightSalmon
+    $label.AutoEllipsis = $true
     $panel.Controls.Add($label)
+    Register-SectionLabel $label
 
     return $panel
 }
 
-$leftPanel  = New-SectionPanel -Title 'Telemetry & Privacy' -X 24 -Y 110 -Width 380 -Height 610
-$rightPanel = New-SectionPanel -Title 'Brave Features & Performance' -X 432 -Y 110 -Width 390 -Height 610
+$leftPanel  = New-SectionPanel -Title 'Telemetry & Privacy' -X 24 -Y 120 -Width 480 -Height 705
+$rightPanel = New-SectionPanel -Title 'Brave Features & Performance' -X 532 -Y 120 -Width 485 -Height 705
 
 function Add-FeatureCheckboxes {
     param(
@@ -279,11 +360,12 @@ function Add-FeatureCheckboxes {
                 default       { $group.Name }
             }
             $subheader.Location = New-Object System.Drawing.Point(18, $currentY)
-            $subheader.Size = New-Object System.Drawing.Size(320, 20)
+            $subheader.Size = New-Object System.Drawing.Size(($Panel.Width - 36), 22)
             $subheader.Font = New-Object System.Drawing.Font('Segoe UI', 9.5, [System.Drawing.FontStyle]::Bold)
-            $subheader.ForeColor = [System.Drawing.Color]::Gainsboro
+            $subheader.AutoEllipsis = $true
             $Panel.Controls.Add($subheader)
-            $currentY += 26
+            Register-SubheaderLabel $subheader
+            $currentY += 28
         }
 
         foreach ($feature in $group.Group) {
@@ -291,10 +373,12 @@ function Add-FeatureCheckboxes {
             $cb.Text = $feature.Name
             $cb.Tag = $feature
             $cb.Location = New-Object System.Drawing.Point(20, $currentY)
-            $cb.Size = New-Object System.Drawing.Size(($Panel.Width - 40), 22)
+            $cb.Size = New-Object System.Drawing.Size(($Panel.Width - 40), 26)
+            $cb.AutoEllipsis = $true
             $cb.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
-            $cb.ForeColor = [System.Drawing.Color]::White
+            $cb.UseCompatibleTextRendering = $true
             $Panel.Controls.Add($cb)
+            Register-ThemedControl $cb
             $script:allCheckboxes += $cb
             $script:checkboxById[$feature.Id] = $cb
 
@@ -310,92 +394,228 @@ function Add-FeatureCheckboxes {
                 })
             }
 
-            $currentY += 24
+            $currentY += 27
         }
-        $currentY += 8
+        $currentY += 10
     }
 }
 
-Add-FeatureCheckboxes -Panel $leftPanel  -Features ($featureCatalog | Where-Object { $_.Category -in @('Telemetry','Privacy') }) -StartY 36 -ShowSubheaders
-Add-FeatureCheckboxes -Panel $rightPanel -Features ($featureCatalog | Where-Object { $_.Category -in @('Brave','Performance') }) -StartY 36 -ShowSubheaders
+Add-FeatureCheckboxes -Panel $leftPanel  -Features ($featureCatalog | Where-Object { $_.Category -in @('Telemetry','Privacy') }) -StartY 38 -ShowSubheaders
+Add-FeatureCheckboxes -Panel $rightPanel -Features ($featureCatalog | Where-Object { $_.Category -in @('Brave','Performance') }) -StartY 38 -ShowSubheaders
 
-# DNS block
-$dnsGroup = New-SectionPanel -Title 'DNS Over HTTPS' -X 24 -Y 736 -Width 798 -Height 86
+$dnsGroup = New-SectionPanel -Title 'DNS Over HTTPS' -X 24 -Y 840 -Width 993 -Height 110
+
+$dnsPresetLabel = New-Object System.Windows.Forms.Label
+$dnsPresetLabel.Text = 'Preset:'
+$dnsPresetLabel.Location = New-Object System.Drawing.Point(20, 42)
+$dnsPresetLabel.Size = New-Object System.Drawing.Size(48, 22)
+$dnsGroup.Controls.Add($dnsPresetLabel)
+Register-ThemedControl $dnsPresetLabel
+
+$dnsPresetDropdown = New-Object System.Windows.Forms.ComboBox
+$dnsPresetDropdown.Location = New-Object System.Drawing.Point(72, 40)
+$dnsPresetDropdown.Size = New-Object System.Drawing.Size(265, 28)
+$dnsPresetDropdown.DropDownStyle = [System.Windows.Forms.ComboBoxStyle]::DropDownList
+$dnsPresetDropdown.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
+$dnsPresetDropdown.Items.AddRange([string[]]$dohPresets.Keys)
+$dnsPresetDropdown.SelectedItem = 'Manual'
+$dnsGroup.Controls.Add($dnsPresetDropdown)
+Register-ThemedControl $dnsPresetDropdown
 
 $dnsModeLabel = New-Object System.Windows.Forms.Label
 $dnsModeLabel.Text = 'Mode:'
-$dnsModeLabel.Location = New-Object System.Drawing.Point(20, 40)
-$dnsModeLabel.Size = New-Object System.Drawing.Size(42, 20)
+$dnsModeLabel.Location = New-Object System.Drawing.Point(356, 42)
+$dnsModeLabel.Size = New-Object System.Drawing.Size(45, 22)
 $dnsGroup.Controls.Add($dnsModeLabel)
+Register-ThemedControl $dnsModeLabel
 
 $dnsDropdown = New-Object System.Windows.Forms.ComboBox
-$dnsDropdown.Location = New-Object System.Drawing.Point(65, 37)
-$dnsDropdown.Size = New-Object System.Drawing.Size(150, 24)
+$dnsDropdown.Location = New-Object System.Drawing.Point(404, 40)
+$dnsDropdown.Size = New-Object System.Drawing.Size(160, 28)
 $dnsDropdown.DropDownStyle = [System.Windows.Forms.ComboBoxStyle]::DropDownList
 $dnsDropdown.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
-$dnsDropdown.BackColor = [System.Drawing.Color]::FromArgb(255, 30, 30, 30)
-$dnsDropdown.ForeColor = [System.Drawing.Color]::White
 $dnsDropdown.Items.AddRange(@('off','automatic','secure','custom'))
 $dnsDropdown.SelectedItem = 'off'
 $dnsGroup.Controls.Add($dnsDropdown)
+Register-ThemedControl $dnsDropdown
 
 $dnsTemplateLabel = New-Object System.Windows.Forms.Label
-$dnsTemplateLabel.Text = 'Custom DoH template URL:'
-$dnsTemplateLabel.Location = New-Object System.Drawing.Point(240, 40)
-$dnsTemplateLabel.Size = New-Object System.Drawing.Size(160, 20)
+$dnsTemplateLabel.Text = 'Template URL:'
+$dnsTemplateLabel.Location = New-Object System.Drawing.Point(584, 42)
+$dnsTemplateLabel.Size = New-Object System.Drawing.Size(92, 22)
 $dnsGroup.Controls.Add($dnsTemplateLabel)
+Register-ThemedControl $dnsTemplateLabel
 
 $dnsTemplateBox = New-Object System.Windows.Forms.TextBox
-$dnsTemplateBox.Location = New-Object System.Drawing.Point(405, 38)
-$dnsTemplateBox.Size = New-Object System.Drawing.Size(370, 20)
+$dnsTemplateBox.Location = New-Object System.Drawing.Point(682, 40)
+$dnsTemplateBox.Size = New-Object System.Drawing.Size(285, 27)
 $dnsTemplateBox.Enabled = $false
-$dnsTemplateBox.BackColor = [System.Drawing.Color]::FromArgb(255, 30, 30, 30)
-$dnsTemplateBox.ForeColor = [System.Drawing.Color]::White
 $dnsGroup.Controls.Add($dnsTemplateBox)
+Register-ThemedControl $dnsTemplateBox
 
-$dnsDropdown.Add_SelectedIndexChanged({
-    $dnsTemplateBox.Enabled = ($dnsDropdown.SelectedItem -eq 'custom')
-})
+$dnsHintLabel = New-Object System.Windows.Forms.Label
+$dnsHintLabel.Text = 'Selecting a preset fills the template and switches Mode to custom.'
+$dnsHintLabel.Location = New-Object System.Drawing.Point(20, 76)
+$dnsHintLabel.Size = New-Object System.Drawing.Size(520, 18)
+$dnsGroup.Controls.Add($dnsHintLabel)
+Register-MutedLabel $dnsHintLabel
 
-# Buttons
 $exportButton = New-Object System.Windows.Forms.Button
 $exportButton.Text = 'Export'
-$exportButton.Location = New-Object System.Drawing.Point(24, 832)
-$exportButton.Size = New-Object System.Drawing.Size(110, 30)
+$exportButton.Location = New-Object System.Drawing.Point(24, 956)
+$exportButton.Size = New-Object System.Drawing.Size(112, 32)
 $exportButton.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
-$exportButton.ForeColor = [System.Drawing.Color]::LightSalmon
 $form.Controls.Add($exportButton)
+Register-ThemedControl $exportButton
+$script:actionButtons['export'] = $exportButton
 
 $importButton = New-Object System.Windows.Forms.Button
 $importButton.Text = 'Import'
-$importButton.Location = New-Object System.Drawing.Point(146, 832)
-$importButton.Size = New-Object System.Drawing.Size(110, 30)
+$importButton.Location = New-Object System.Drawing.Point(148, 956)
+$importButton.Size = New-Object System.Drawing.Size(112, 32)
 $importButton.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
-$importButton.ForeColor = [System.Drawing.Color]::LightSkyBlue
 $form.Controls.Add($importButton)
+Register-ThemedControl $importButton
+$script:actionButtons['import'] = $importButton
 
 $applyButton = New-Object System.Windows.Forms.Button
 $applyButton.Text = 'Apply'
-$applyButton.Location = New-Object System.Drawing.Point(590, 832)
-$applyButton.Size = New-Object System.Drawing.Size(110, 30)
+$applyButton.Location = New-Object System.Drawing.Point(782, 956)
+$applyButton.Size = New-Object System.Drawing.Size(112, 32)
 $applyButton.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
-$applyButton.ForeColor = [System.Drawing.Color]::LightGreen
 $form.Controls.Add($applyButton)
+Register-ThemedControl $applyButton
+$script:actionButtons['apply'] = $applyButton
 
 $resetButton = New-Object System.Windows.Forms.Button
 $resetButton.Text = 'Reset Managed Policies'
-$resetButton.Location = New-Object System.Drawing.Point(712, 832)
-$resetButton.Size = New-Object System.Drawing.Size(110, 30)
+$resetButton.Location = New-Object System.Drawing.Point(905, 956)
+$resetButton.Size = New-Object System.Drawing.Size(112, 32)
 $resetButton.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
-$resetButton.ForeColor = [System.Drawing.Color]::LightCoral
 $form.Controls.Add($resetButton)
+Register-ThemedControl $resetButton
+$script:actionButtons['reset'] = $resetButton
 
 $statusLabel = New-Object System.Windows.Forms.Label
 $statusLabel.Text = 'Ready.'
-$statusLabel.Location = New-Object System.Drawing.Point(278, 838)
-$statusLabel.Size = New-Object System.Drawing.Size(290, 20)
-$statusLabel.ForeColor = [System.Drawing.Color]::Silver
+$statusLabel.Location = New-Object System.Drawing.Point(290, 962)
+$statusLabel.Size = New-Object System.Drawing.Size(470, 20)
+$statusLabel.AutoEllipsis = $true
 $form.Controls.Add($statusLabel)
+Register-MutedLabel $statusLabel
+
+function Apply-Theme {
+    param([bool]$DarkMode)
+
+    $script:isDarkTheme = $DarkMode
+
+    if ($DarkMode) {
+        $colors = @{
+            FormBack       = [System.Drawing.Color]::FromArgb(255, 24, 24, 24)
+            PanelBack      = [System.Drawing.Color]::FromArgb(255, 36, 36, 36)
+            ControlBack    = [System.Drawing.Color]::FromArgb(255, 32, 32, 32)
+            Text           = [System.Drawing.Color]::White
+            Muted          = [System.Drawing.Color]::Silver
+            BorderAccent   = [System.Drawing.Color]::FromArgb(255, 95, 95, 95)
+            SectionAccent  = [System.Drawing.Color]::FromArgb(255, 255, 189, 146)
+            Subheader      = [System.Drawing.Color]::Gainsboro
+            ButtonAccent   = [System.Drawing.Color]::FromArgb(255, 52, 52, 52)
+        }
+        $themeButton.Text = '☀'
+    }
+    else {
+        $colors = @{
+            FormBack       = [System.Drawing.Color]::FromArgb(255, 248, 249, 251)
+            PanelBack      = [System.Drawing.Color]::White
+            ControlBack    = [System.Drawing.Color]::White
+            Text           = [System.Drawing.Color]::FromArgb(255, 28, 28, 28)
+            Muted          = [System.Drawing.Color]::FromArgb(255, 95, 95, 95)
+            BorderAccent   = [System.Drawing.Color]::FromArgb(255, 200, 205, 214)
+            SectionAccent  = [System.Drawing.Color]::FromArgb(255, 53, 107, 187)
+            Subheader      = [System.Drawing.Color]::FromArgb(255, 75, 75, 75)
+            ButtonAccent   = [System.Drawing.Color]::FromArgb(255, 248, 249, 251)
+        }
+        $themeButton.Text = '☾'
+    }
+
+    $form.BackColor = $colors.FormBack
+
+    foreach ($panel in $script:themePanels) {
+        $panel.BackColor = $colors.PanelBack
+    }
+
+    foreach ($label in $script:sectionLabels) {
+        $label.ForeColor = $colors.SectionAccent
+        $label.BackColor = [System.Drawing.Color]::Transparent
+    }
+
+    foreach ($label in $script:subheaderLabels) {
+        $label.ForeColor = $colors.Subheader
+        $label.BackColor = [System.Drawing.Color]::Transparent
+    }
+
+    foreach ($label in $script:mutedLabels) {
+        $label.ForeColor = $colors.Muted
+        $label.BackColor = [System.Drawing.Color]::Transparent
+    }
+
+    foreach ($control in $script:themeControls) {
+        if ($control -is [System.Windows.Forms.TextBox] -or $control -is [System.Windows.Forms.ComboBox]) {
+            $control.BackColor = $colors.ControlBack
+            $control.ForeColor = $colors.Text
+        }
+        elseif ($control -is [System.Windows.Forms.CheckBox]) {
+            $control.ForeColor = $colors.Text
+            $control.BackColor = [System.Drawing.Color]::Transparent
+        }
+        elseif ($control -is [System.Windows.Forms.Button]) {
+            $control.BackColor = $colors.ButtonAccent
+            $control.ForeColor = $colors.Text
+            $control.FlatAppearance.BorderColor = $colors.BorderAccent
+            $control.FlatAppearance.MouseOverBackColor = if ($DarkMode) { [System.Drawing.Color]::FromArgb(255, 62, 62, 62) } else { [System.Drawing.Color]::FromArgb(255, 235, 240, 248) }
+            $control.FlatAppearance.MouseDownBackColor = if ($DarkMode) { [System.Drawing.Color]::FromArgb(255, 70, 70, 70) } else { [System.Drawing.Color]::FromArgb(255, 225, 232, 243) }
+        }
+        else {
+            $control.ForeColor = $colors.Text
+            $control.BackColor = [System.Drawing.Color]::Transparent
+        }
+    }
+
+    if ($script:actionButtons.ContainsKey('apply')) { $script:actionButtons['apply'].ForeColor = if ($DarkMode) { [System.Drawing.Color]::LightGreen } else { [System.Drawing.Color]::FromArgb(255, 0, 122, 61) } }
+    if ($script:actionButtons.ContainsKey('reset')) { $script:actionButtons['reset'].ForeColor = if ($DarkMode) { [System.Drawing.Color]::LightCoral } else { [System.Drawing.Color]::FromArgb(255, 180, 50, 50) } }
+    if ($script:actionButtons.ContainsKey('loadPreset')) { $script:actionButtons['loadPreset'].ForeColor = if ($DarkMode) { [System.Drawing.Color]::LightSkyBlue } else { [System.Drawing.Color]::FromArgb(255, 0, 96, 176) } }
+    if ($script:actionButtons.ContainsKey('export')) { $script:actionButtons['export'].ForeColor = if ($DarkMode) { [System.Drawing.Color]::LightSalmon } else { [System.Drawing.Color]::FromArgb(255, 176, 84, 40) } }
+    if ($script:actionButtons.ContainsKey('import')) { $script:actionButtons['import'].ForeColor = if ($DarkMode) { [System.Drawing.Color]::LightSkyBlue } else { [System.Drawing.Color]::FromArgb(255, 0, 96, 176) } }
+}
+
+$themeButton.Add_Click({
+    Apply-Theme -DarkMode (-not $script:isDarkTheme)
+})
+
+$dnsDropdown.Add_SelectedIndexChanged({
+    $dnsTemplateBox.Enabled = ($dnsDropdown.SelectedItem -eq 'custom')
+    if ($dnsDropdown.SelectedItem -ne 'custom') {
+        $dnsPresetDropdown.SelectedItem = 'Manual'
+    }
+})
+
+$dnsPresetDropdown.Add_SelectedIndexChanged({
+    $selectedPreset = [string]$dnsPresetDropdown.SelectedItem
+    if ([string]::IsNullOrWhiteSpace($selectedPreset) -or $selectedPreset -eq 'Manual') {
+        return
+    }
+
+    $dnsDropdown.SelectedItem = 'custom'
+
+    if ($selectedPreset -eq 'NextDNS Custom Profile') {
+        if ([string]::IsNullOrWhiteSpace($dnsTemplateBox.Text) -or $dnsTemplateBox.Text -notmatch '^https://dns\.nextdns\.io/') {
+            $dnsTemplateBox.Text = [string]$dohPresets[$selectedPreset]
+        }
+    }
+    else {
+        $dnsTemplateBox.Text = [string]$dohPresets[$selectedPreset]
+    }
+})
 
 function Set-FeatureSelection {
     param([string[]]$FeatureIds)
@@ -431,7 +651,8 @@ function Initialize-CurrentSettings {
 
         if ($feature.Type -eq 'DWord') {
             $cb.Checked = ([int]$policy.Value -eq [int]$feature.Value)
-        } else {
+        }
+        else {
             $cb.Checked = ($policy.Value.ToString() -eq $feature.Value.ToString())
         }
     }
@@ -444,19 +665,24 @@ function Initialize-CurrentSettings {
         $dnsTemplateBox.Text = [string]$dnsTemplatePolicy.Value
     }
     elseif ($dnsModePolicy -and -not [string]::IsNullOrWhiteSpace($dnsModePolicy.Value)) {
-        if ([string]$dnsModePolicy.Value -eq 'secure' -and $dnsTemplatePolicy) {
-            $dnsDropdown.SelectedItem = 'custom'
-        } else {
-            $dnsDropdown.SelectedItem = [string]$dnsModePolicy.Value
+        $modeValue = [string]$dnsModePolicy.Value
+        if (@('off','automatic','secure','custom') -contains $modeValue) {
+            $dnsDropdown.SelectedItem = $modeValue
+        }
+        else {
+            $dnsDropdown.SelectedItem = 'off'
         }
     }
     else {
         $dnsDropdown.SelectedItem = 'off'
     }
 
+    $dnsPresetDropdown.SelectedItem = Detect-DnsPresetName -Template $dnsTemplateBox.Text
+
     if (Test-IsAdmin) {
         $scopeDropdown.SelectedItem = 'Machine (HKLM)'
-    } else {
+    }
+    else {
         $scopeDropdown.SelectedItem = 'User (HKCU)'
     }
 }
@@ -539,6 +765,7 @@ $resetButton.Add_Click({
         $cb.Checked = $false
     }
     $dnsDropdown.SelectedItem = 'off'
+    $dnsPresetDropdown.SelectedItem = 'Manual'
     $dnsTemplateBox.Text = ''
     $presetDropdown.SelectedItem = 'Custom'
     $statusLabel.Text = 'Managed policies reset.'
@@ -556,12 +783,14 @@ $exportButton.Add_Click({
     }
 
     $payload = [ordered]@{
-        AppVersion   = '0.1.0'
+        AppVersion   = '0.2.0'
         Preset       = [string]$presetDropdown.SelectedItem
         FeatureIds   = @((Get-SelectedFeatureObjects) | ForEach-Object { $_.Id })
         FeatureKeys  = @((Get-SelectedFeatureObjects) | ForEach-Object { $_.Key })
         DnsMode      = [string]$dnsDropdown.SelectedItem
+        DnsPreset    = [string]$dnsPresetDropdown.SelectedItem
         DnsTemplates = [string]$dnsTemplateBox.Text
+        Theme        = if ($script:isDarkTheme) { 'dark' } else { 'light' }
     }
 
     $payload | ConvertTo-Json -Depth 4 | Set-Content -Encoding UTF8 -Path $dialog.FileName
@@ -588,7 +817,6 @@ $importButton.Add_Click({
             Set-FeatureSelection -FeatureIds @($payload.FeatureIds)
         }
         elseif ($payload.PSObject.Properties.Name -contains 'Features' -and $payload.Features) {
-            # SlimBrave Neo compatibility: import by policy keys
             foreach ($key in $payload.Features) {
                 foreach ($feature in $featureCatalog) {
                     if ($feature.Key -eq $key -and $script:checkboxById.ContainsKey($feature.Id)) {
@@ -610,7 +838,9 @@ $importButton.Add_Click({
         }
 
         if ($payload.PSObject.Properties.Name -contains 'DnsMode' -and $payload.DnsMode) {
-            $dnsDropdown.SelectedItem = [string]$payload.DnsMode
+            if (@('off','automatic','secure','custom') -contains ([string]$payload.DnsMode)) {
+                $dnsDropdown.SelectedItem = [string]$payload.DnsMode
+            }
         }
         if ($payload.PSObject.Properties.Name -contains 'DnsTemplates' -and $payload.DnsTemplates) {
             $dnsTemplateBox.Text = [string]$payload.DnsTemplates
@@ -618,12 +848,22 @@ $importButton.Add_Click({
                 $dnsDropdown.SelectedItem = 'custom'
             }
         }
+        if ($payload.PSObject.Properties.Name -contains 'DnsPreset' -and $payload.DnsPreset -and $dnsPresetDropdown.Items.Contains([string]$payload.DnsPreset)) {
+            $dnsPresetDropdown.SelectedItem = [string]$payload.DnsPreset
+        }
+        else {
+            $dnsPresetDropdown.SelectedItem = Detect-DnsPresetName -Template $dnsTemplateBox.Text
+        }
 
         if ($payload.PSObject.Properties.Name -contains 'Preset' -and $payload.Preset -and $presetDropdown.Items.Contains([string]$payload.Preset)) {
             $presetDropdown.SelectedItem = [string]$payload.Preset
         }
         else {
             $presetDropdown.SelectedItem = 'Custom'
+        }
+
+        if ($payload.PSObject.Properties.Name -contains 'Theme' -and $payload.Theme) {
+            Apply-Theme -DarkMode (([string]$payload.Theme).ToLowerInvariant() -ne 'light')
         }
 
         $statusLabel.Text = "Imported: $($dialog.FileName)"
@@ -638,5 +878,6 @@ $importButton.Add_Click({
     }
 })
 
+Apply-Theme -DarkMode $true
 Initialize-CurrentSettings
 [void]$form.ShowDialog()
