@@ -155,9 +155,7 @@ $importButton.Add_Click({
 
     try {
         $payload = Get-Content -Raw -Path $dialog.FileName | ConvertFrom-Json
-        foreach ($cb in $script:allCheckboxes) {
-            $cb.Checked = $false
-        }
+        Clear-FeatureSelection
 
         if ($payload.PSObject.Properties.Name -contains 'FeatureIds' -and $payload.FeatureIds) {
             Set-FeatureSelection -FeatureIds @($payload.FeatureIds)

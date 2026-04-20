@@ -7,7 +7,7 @@ function Test-IsAdmin {
 
 if (-not $NoAdminRelaunch -and -not (Test-IsAdmin)) {
     try {
-        Start-Process powershell -ArgumentList "-ExecutionPolicy Bypass -File `"$($MyInvocation.MyCommand.Path)`" -NoAdminRelaunch" -Verb RunAs
+        Start-Process powershell -ArgumentList "-ExecutionPolicy Bypass -File `"$($MyInvocation.MyCommand.Path)`" -Bootstrap -NoAdminRelaunch" -Verb RunAs
         exit
     } catch {
         [System.Windows.Forms.MessageBox]::Show(
@@ -22,7 +22,7 @@ if (-not $NoAdminRelaunch -and -not (Test-IsAdmin)) {
 $machineRegistryPath = "HKLM:\SOFTWARE\Policies\BraveSoftware\Brave"
 $userRegistryPath    = "HKCU:\SOFTWARE\Policies\BraveSoftware\Brave"
 $script:registryPath = $machineRegistryPath
-$script:toolVersion  = '0.3.2'
+$script:toolVersion  = '0.4.0'
 
 function Ensure-PolicyPathExists {
     param([string]$Path)

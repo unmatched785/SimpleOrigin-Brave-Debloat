@@ -12,6 +12,8 @@ It gives you:
 
 - one-by-one policy toggles
 - preset-based setup for common configurations
+- a `Clear Checks` action to uncheck everything without writing changes
+- screen-aware window sizing with scroll support for smaller laptop displays
 - DNS-over-HTTPS presets
 - import/export for repeatable setups
 - a **self-healing one-line launcher** for `irm ... | iex`
@@ -36,6 +38,8 @@ If it detects that it was launched directly from memory instead of from a file, 
 4. relaunch from the temp file with `-ExecutionPolicy Bypass`
 
 This reduces the encoding and parser issues that sometimes appear on other Windows laptops when raw PowerShell scripts are executed directly.
+
+Release history is tracked in [CHANGELOG.md](./CHANGELOG.md).
 
 ## What this project is
 

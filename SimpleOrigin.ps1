@@ -220,7 +220,7 @@ if (-not $NoAdminRelaunch -and -not (Test-IsAdmin)) {
 $machineRegistryPath = "HKLM:\SOFTWARE\Policies\BraveSoftware\Brave"
 $userRegistryPath    = "HKCU:\SOFTWARE\Policies\BraveSoftware\Brave"
 $script:registryPath = $machineRegistryPath
-$script:toolVersion  = '0.3.2'
+$script:toolVersion  = '0.4.0'
 
 function Ensure-PolicyPathExists {
     param([string]$Path)
@@ -344,14 +344,14 @@ $hardeningPreset = @(
 $originAndHardeningPreset = @($originPreset + $hardeningPreset | Select-Object -Unique)
 
 $presets = [ordered]@{
-    'Origin + Hardening - Recommended' = $originAndHardeningPreset
+    'Origin + Hardening — Recommended' = $originAndHardeningPreset
     'Origin'                           = $originPreset
     'Hardening'                        = $hardeningPreset
     'Custom'                           = @()
 }
 
 $presetDescriptions = [ordered]@{
-    'Origin + Hardening - Recommended' = 'Recommended preset: Origin-like debloating plus practical privacy hardening.'
+    'Origin + Hardening — Recommended' = 'Recommended preset: Origin-like debloating plus practical privacy hardening.'
     'Origin'                           = 'Closest to Brave Origin upgrade-like behavior using managed policies.'
     'Hardening'                        = 'Privacy-oriented preset inspired by public Brave hardening guidance.'
     'Custom'                           = 'Manual selection. Choose each policy toggle yourself.'
@@ -607,18 +607,25 @@ function Register-MutedLabel {
 }
 
 $form = New-Object System.Windows.Forms.Form
-$form.Text = 'Simple Origin v0.3.2'
-$form.Size = New-Object System.Drawing.Size(1220, 1175)
-$form.MinimumSize = New-Object System.Drawing.Size(1220, 1175)
-$form.MaximumSize = New-Object System.Drawing.Size(1220, 1175)
+$designFormSize = New-Object System.Drawing.Size(1220, 1175)
+$minimumFormSize = New-Object System.Drawing.Size(1024, 760)
+$workingArea = [System.Windows.Forms.Screen]::PrimaryScreen.WorkingArea
+$initialFormWidth = [Math]::Min($designFormSize.Width, [Math]::Max($minimumFormSize.Width, ($workingArea.Width - 40)))
+$initialFormHeight = [Math]::Min($designFormSize.Height, [Math]::Max($minimumFormSize.Height, ($workingArea.Height - 40)))
+
+$form.Text = 'Simple Origin v0.4.0'
+$form.Size = New-Object System.Drawing.Size($initialFormWidth, $initialFormHeight)
+$form.MinimumSize = $minimumFormSize
 $form.StartPosition = 'CenterScreen'
-$form.MaximizeBox = $false
-$form.FormBorderStyle = [System.Windows.Forms.FormBorderStyle]::FixedDialog
+$form.MaximizeBox = $true
+$form.FormBorderStyle = [System.Windows.Forms.FormBorderStyle]::Sizable
 $form.Font = New-Object System.Drawing.Font('Segoe UI', 9)
 $form.AutoScaleMode = [System.Windows.Forms.AutoScaleMode]::Dpi
+$form.AutoScroll = $true
+$form.AutoScrollMinSize = $designFormSize
 
 $titleLabel = New-Object System.Windows.Forms.Label
-$titleLabel.Text = 'Simple Origin v0.3.2 - Brave policy UI'
+$titleLabel.Text = 'Simple Origin v0.4.0 — Brave policy UI'
 $titleLabel.Location = New-Object System.Drawing.Point(24, 18)
 $titleLabel.Size = New-Object System.Drawing.Size(940, 30)
 $titleLabel.Font = New-Object System.Drawing.Font('Segoe UI', 11.5, [System.Drawing.FontStyle]::Bold)
@@ -637,10 +644,10 @@ $form.Controls.Add($subLabel)
 Register-MutedLabel $subLabel
 
 $themeButton = New-Object System.Windows.Forms.Button
-$themeButton.Text = 'Theme'
-$themeButton.Location = New-Object System.Drawing.Point(1104, 18)
-$themeButton.Size = New-Object System.Drawing.Size(72, 34)
-$themeButton.Font = New-Object System.Drawing.Font('Segoe UI', 9, [System.Drawing.FontStyle]::Bold)
+$themeButton.Text = '☾'
+$themeButton.Location = New-Object System.Drawing.Point(1124, 18)
+$themeButton.Size = New-Object System.Drawing.Size(52, 34)
+$themeButton.Font = New-Object System.Drawing.Font('Segoe UI Symbol', 12, [System.Drawing.FontStyle]::Bold)
 $themeButton.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
 $themeButton.TabStop = $false
 $form.Controls.Add($themeButton)
@@ -673,34 +680,43 @@ $form.Controls.Add($applyPresetButton)
 Register-ThemedControl $applyPresetButton
 $script:actionButtons['loadPreset'] = $applyPresetButton
 
+$clearSelectionButton = New-Object System.Windows.Forms.Button
+$clearSelectionButton.Text = 'Clear Checks'
+$clearSelectionButton.Location = New-Object System.Drawing.Point(444, 77)
+$clearSelectionButton.Size = New-Object System.Drawing.Size(108, 30)
+$clearSelectionButton.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
+$form.Controls.Add($clearSelectionButton)
+Register-ThemedControl $clearSelectionButton
+$script:actionButtons['clearSelection'] = $clearSelectionButton
+
 $scopeLabel = New-Object System.Windows.Forms.Label
 $scopeLabel.Text = 'Write scope:'
-$scopeLabel.Location = New-Object System.Drawing.Point(470, 80)
+$scopeLabel.Location = New-Object System.Drawing.Point(566, 80)
 $scopeLabel.Size = New-Object System.Drawing.Size(78, 22)
 $form.Controls.Add($scopeLabel)
 Register-ThemedControl $scopeLabel
 
 $scopeDropdown = New-Object System.Windows.Forms.ComboBox
-$scopeDropdown.Location = New-Object System.Drawing.Point(555, 78)
-$scopeDropdown.Size = New-Object System.Drawing.Size(255, 28)
+$scopeDropdown.Location = New-Object System.Drawing.Point(651, 78)
+$scopeDropdown.Size = New-Object System.Drawing.Size(205, 28)
 $scopeDropdown.DropDownStyle = [System.Windows.Forms.ComboBoxStyle]::DropDownList
 $scopeDropdown.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
-$scopeDropdown.Items.AddRange(@('User (HKCU) - Recommended','Machine (HKLM)'))
-$scopeDropdown.SelectedItem = 'User (HKCU) - Recommended'
+$scopeDropdown.Items.AddRange(@('User (HKCU) — Recommended','Machine (HKLM)'))
+$scopeDropdown.SelectedItem = 'User (HKCU) — Recommended'
 $form.Controls.Add($scopeDropdown)
 Register-ThemedControl $scopeDropdown
 
 $scopeHintLabel = New-Object System.Windows.Forms.Label
 $scopeHintLabel.Text = 'Recommended: User (HKCU) for most personal PCs. Apply makes the selected scope authoritative for Simple Origin-managed keys when possible.'
-$scopeHintLabel.Location = New-Object System.Drawing.Point(820, 76)
-$scopeHintLabel.Size = New-Object System.Drawing.Size(345, 40)
+$scopeHintLabel.Location = New-Object System.Drawing.Point(868, 76)
+$scopeHintLabel.Size = New-Object System.Drawing.Size(297, 40)
 $scopeHintLabel.AutoEllipsis = $true
 $scopeHintLabel.UseMnemonic = $false
 $form.Controls.Add($scopeHintLabel)
 Register-MutedLabel $scopeHintLabel
 
 $presetDescriptionLabel = New-Object System.Windows.Forms.Label
-$presetDescriptionLabel.Text = [string]$presetDescriptions['Origin + Hardening - Recommended']
+$presetDescriptionLabel.Text = [string]$presetDescriptions['Origin + Hardening — Recommended']
 $presetDescriptionLabel.Location = New-Object System.Drawing.Point(24, 108)
 $presetDescriptionLabel.Size = New-Object System.Drawing.Size(1140, 20)
 $presetDescriptionLabel.AutoEllipsis = $true
@@ -759,9 +775,9 @@ function Add-FeatureCheckboxes {
             $subheader = New-Object System.Windows.Forms.Label
             $subheader.Text = switch ($group.Name) {
                 'Telemetry'   { 'Telemetry and Reporting' }
-                'Privacy'     { 'Privacy and Security' }
+                'Privacy'     { 'Privacy & Security' }
                 'Brave'       { 'Brave Features' }
-                'Performance' { 'Performance and Bloat' }
+                'Performance' { 'Performance & Bloat' }
                 default       { $group.Name }
             }
             $subheader.Location = New-Object System.Drawing.Point(18, $currentY)
@@ -929,7 +945,7 @@ function Apply-Theme {
             Subheader      = [System.Drawing.Color]::Gainsboro
             ButtonAccent   = [System.Drawing.Color]::FromArgb(255, 52, 52, 52)
         }
-        $themeButton.Text = 'Light'
+        $themeButton.Text = '☀'
     }
     else {
         $colors = @{
@@ -943,7 +959,7 @@ function Apply-Theme {
             Subheader      = [System.Drawing.Color]::FromArgb(255, 75, 75, 75)
             ButtonAccent   = [System.Drawing.Color]::FromArgb(255, 248, 249, 251)
         }
-        $themeButton.Text = 'Dark'
+        $themeButton.Text = '☾'
     }
 
     $form.BackColor = $colors.FormBack
@@ -1003,6 +1019,7 @@ function Apply-Theme {
     if ($script:actionButtons.ContainsKey('apply')) { $script:actionButtons['apply'].ForeColor = if ($DarkMode) { [System.Drawing.Color]::LightGreen } else { [System.Drawing.Color]::FromArgb(255, 0, 122, 61) } }
     if ($script:actionButtons.ContainsKey('reset')) { $script:actionButtons['reset'].ForeColor = if ($DarkMode) { [System.Drawing.Color]::LightCoral } else { [System.Drawing.Color]::FromArgb(255, 180, 50, 50) } }
     if ($script:actionButtons.ContainsKey('loadPreset')) { $script:actionButtons['loadPreset'].ForeColor = if ($DarkMode) { [System.Drawing.Color]::LightSkyBlue } else { [System.Drawing.Color]::FromArgb(255, 0, 96, 176) } }
+    if ($script:actionButtons.ContainsKey('clearSelection')) { $script:actionButtons['clearSelection'].ForeColor = if ($DarkMode) { [System.Drawing.Color]::Khaki } else { [System.Drawing.Color]::FromArgb(255, 146, 98, 0) } }
     if ($script:actionButtons.ContainsKey('export')) { $script:actionButtons['export'].ForeColor = if ($DarkMode) { [System.Drawing.Color]::LightSalmon } else { [System.Drawing.Color]::FromArgb(255, 176, 84, 40) } }
     if ($script:actionButtons.ContainsKey('import')) { $script:actionButtons['import'].ForeColor = if ($DarkMode) { [System.Drawing.Color]::LightSkyBlue } else { [System.Drawing.Color]::FromArgb(255, 0, 96, 176) } }
 }
@@ -1039,14 +1056,18 @@ $dnsPresetDropdown.Add_SelectedIndexChanged({
 function Set-FeatureSelection {
     param([string[]]$FeatureIds)
 
-    foreach ($cb in $script:allCheckboxes) {
-        $cb.Checked = $false
-    }
+    Clear-FeatureSelection
 
     foreach ($id in $FeatureIds) {
         if ($script:checkboxById.ContainsKey($id)) {
             $script:checkboxById[$id].Checked = $true
         }
+    }
+}
+
+function Clear-FeatureSelection {
+    foreach ($cb in $script:allCheckboxes) {
+        $cb.Checked = $false
     }
 }
 
@@ -1090,6 +1111,15 @@ $applyPresetButton.Add_Click({
     Set-FeatureSelection -FeatureIds $presets[$selectedPreset]
     $statusLabel.Text = "Loaded preset: $selectedPreset"
     Update-PresetDescription
+})
+
+$clearSelectionButton.Add_Click({
+    Clear-FeatureSelection
+    if ($presetDropdown.Items.Contains('Custom')) {
+        $presetDropdown.SelectedItem = 'Custom'
+    }
+    Update-PresetDescription
+    $statusLabel.Text = 'Cleared all checkbox selections. Review DNS/scope and click Apply only if you want to write changes.'
 })
 
 $presetDropdown.Add_SelectedIndexChanged({
@@ -1149,13 +1179,13 @@ function Initialize-CurrentSettings {
 
     $matchingPreset = Get-MatchingPresetName
     if ((Get-CurrentFeatureIdSet).Count -eq 0) {
-        $presetDropdown.SelectedItem = 'Origin + Hardening - Recommended'
+        $presetDropdown.SelectedItem = 'Origin + Hardening — Recommended'
     }
     elseif ($presetDropdown.Items.Contains($matchingPreset)) {
         $presetDropdown.SelectedItem = $matchingPreset
     }
     else {
-        $presetDropdown.SelectedItem = 'Origin + Hardening - Recommended'
+        $presetDropdown.SelectedItem = 'Origin + Hardening — Recommended'
     }
 
     Update-PresetDescription
@@ -1331,9 +1361,7 @@ $importButton.Add_Click({
 
     try {
         $payload = Get-Content -Raw -Path $dialog.FileName | ConvertFrom-Json
-        foreach ($cb in $script:allCheckboxes) {
-            $cb.Checked = $false
-        }
+        Clear-FeatureSelection
 
         if ($payload.PSObject.Properties.Name -contains 'FeatureIds' -and $payload.FeatureIds) {
             Set-FeatureSelection -FeatureIds @($payload.FeatureIds)

@@ -1,16 +1,23 @@
 $form = New-Object System.Windows.Forms.Form
-$form.Text = 'Simple Origin v0.3.2'
-$form.Size = New-Object System.Drawing.Size(1220, 1175)
-$form.MinimumSize = New-Object System.Drawing.Size(1220, 1175)
-$form.MaximumSize = New-Object System.Drawing.Size(1220, 1175)
+$designFormSize = New-Object System.Drawing.Size(1220, 1175)
+$minimumFormSize = New-Object System.Drawing.Size(1024, 760)
+$workingArea = [System.Windows.Forms.Screen]::PrimaryScreen.WorkingArea
+$initialFormWidth = [Math]::Min($designFormSize.Width, [Math]::Max($minimumFormSize.Width, ($workingArea.Width - 40)))
+$initialFormHeight = [Math]::Min($designFormSize.Height, [Math]::Max($minimumFormSize.Height, ($workingArea.Height - 40)))
+
+$form.Text = 'Simple Origin v0.4.0'
+$form.Size = New-Object System.Drawing.Size($initialFormWidth, $initialFormHeight)
+$form.MinimumSize = $minimumFormSize
 $form.StartPosition = 'CenterScreen'
-$form.MaximizeBox = $false
-$form.FormBorderStyle = [System.Windows.Forms.FormBorderStyle]::FixedDialog
+$form.MaximizeBox = $true
+$form.FormBorderStyle = [System.Windows.Forms.FormBorderStyle]::Sizable
 $form.Font = New-Object System.Drawing.Font('Segoe UI', 9)
 $form.AutoScaleMode = [System.Windows.Forms.AutoScaleMode]::Dpi
+$form.AutoScroll = $true
+$form.AutoScrollMinSize = $designFormSize
 
 $titleLabel = New-Object System.Windows.Forms.Label
-$titleLabel.Text = 'Simple Origin v0.3.2 — Brave policy UI'
+$titleLabel.Text = 'Simple Origin v0.4.0 — Brave policy UI'
 $titleLabel.Location = New-Object System.Drawing.Point(24, 18)
 $titleLabel.Size = New-Object System.Drawing.Size(940, 30)
 $titleLabel.Font = New-Object System.Drawing.Font('Segoe UI', 11.5, [System.Drawing.FontStyle]::Bold)
@@ -65,16 +72,25 @@ $form.Controls.Add($applyPresetButton)
 Register-ThemedControl $applyPresetButton
 $script:actionButtons['loadPreset'] = $applyPresetButton
 
+$clearSelectionButton = New-Object System.Windows.Forms.Button
+$clearSelectionButton.Text = 'Clear Checks'
+$clearSelectionButton.Location = New-Object System.Drawing.Point(444, 77)
+$clearSelectionButton.Size = New-Object System.Drawing.Size(108, 30)
+$clearSelectionButton.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
+$form.Controls.Add($clearSelectionButton)
+Register-ThemedControl $clearSelectionButton
+$script:actionButtons['clearSelection'] = $clearSelectionButton
+
 $scopeLabel = New-Object System.Windows.Forms.Label
 $scopeLabel.Text = 'Write scope:'
-$scopeLabel.Location = New-Object System.Drawing.Point(470, 80)
+$scopeLabel.Location = New-Object System.Drawing.Point(566, 80)
 $scopeLabel.Size = New-Object System.Drawing.Size(78, 22)
 $form.Controls.Add($scopeLabel)
 Register-ThemedControl $scopeLabel
 
 $scopeDropdown = New-Object System.Windows.Forms.ComboBox
-$scopeDropdown.Location = New-Object System.Drawing.Point(555, 78)
-$scopeDropdown.Size = New-Object System.Drawing.Size(255, 28)
+$scopeDropdown.Location = New-Object System.Drawing.Point(651, 78)
+$scopeDropdown.Size = New-Object System.Drawing.Size(205, 28)
 $scopeDropdown.DropDownStyle = [System.Windows.Forms.ComboBoxStyle]::DropDownList
 $scopeDropdown.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
 $scopeDropdown.Items.AddRange(@('User (HKCU) — Recommended','Machine (HKLM)'))
@@ -84,8 +100,8 @@ Register-ThemedControl $scopeDropdown
 
 $scopeHintLabel = New-Object System.Windows.Forms.Label
 $scopeHintLabel.Text = 'Recommended: User (HKCU) for most personal PCs. Apply makes the selected scope authoritative for Simple Origin-managed keys when possible.'
-$scopeHintLabel.Location = New-Object System.Drawing.Point(820, 76)
-$scopeHintLabel.Size = New-Object System.Drawing.Size(345, 40)
+$scopeHintLabel.Location = New-Object System.Drawing.Point(868, 76)
+$scopeHintLabel.Size = New-Object System.Drawing.Size(297, 40)
 $scopeHintLabel.AutoEllipsis = $true
 $scopeHintLabel.UseMnemonic = $false
 $form.Controls.Add($scopeHintLabel)

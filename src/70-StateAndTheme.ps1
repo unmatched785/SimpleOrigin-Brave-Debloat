@@ -89,6 +89,7 @@ function Apply-Theme {
     if ($script:actionButtons.ContainsKey('apply')) { $script:actionButtons['apply'].ForeColor = if ($DarkMode) { [System.Drawing.Color]::LightGreen } else { [System.Drawing.Color]::FromArgb(255, 0, 122, 61) } }
     if ($script:actionButtons.ContainsKey('reset')) { $script:actionButtons['reset'].ForeColor = if ($DarkMode) { [System.Drawing.Color]::LightCoral } else { [System.Drawing.Color]::FromArgb(255, 180, 50, 50) } }
     if ($script:actionButtons.ContainsKey('loadPreset')) { $script:actionButtons['loadPreset'].ForeColor = if ($DarkMode) { [System.Drawing.Color]::LightSkyBlue } else { [System.Drawing.Color]::FromArgb(255, 0, 96, 176) } }
+    if ($script:actionButtons.ContainsKey('clearSelection')) { $script:actionButtons['clearSelection'].ForeColor = if ($DarkMode) { [System.Drawing.Color]::Khaki } else { [System.Drawing.Color]::FromArgb(255, 146, 98, 0) } }
     if ($script:actionButtons.ContainsKey('export')) { $script:actionButtons['export'].ForeColor = if ($DarkMode) { [System.Drawing.Color]::LightSalmon } else { [System.Drawing.Color]::FromArgb(255, 176, 84, 40) } }
     if ($script:actionButtons.ContainsKey('import')) { $script:actionButtons['import'].ForeColor = if ($DarkMode) { [System.Drawing.Color]::LightSkyBlue } else { [System.Drawing.Color]::FromArgb(255, 0, 96, 176) } }
 }
@@ -125,14 +126,18 @@ $dnsPresetDropdown.Add_SelectedIndexChanged({
 function Set-FeatureSelection {
     param([string[]]$FeatureIds)
 
-    foreach ($cb in $script:allCheckboxes) {
-        $cb.Checked = $false
-    }
+    Clear-FeatureSelection
 
     foreach ($id in $FeatureIds) {
         if ($script:checkboxById.ContainsKey($id)) {
             $script:checkboxById[$id].Checked = $true
         }
+    }
+}
+
+function Clear-FeatureSelection {
+    foreach ($cb in $script:allCheckboxes) {
+        $cb.Checked = $false
     }
 }
 
@@ -176,6 +181,15 @@ $applyPresetButton.Add_Click({
     Set-FeatureSelection -FeatureIds $presets[$selectedPreset]
     $statusLabel.Text = "Loaded preset: $selectedPreset"
     Update-PresetDescription
+})
+
+$clearSelectionButton.Add_Click({
+    Clear-FeatureSelection
+    if ($presetDropdown.Items.Contains('Custom')) {
+        $presetDropdown.SelectedItem = 'Custom'
+    }
+    Update-PresetDescription
+    $statusLabel.Text = 'Cleared all checkbox selections. Review DNS/scope and click Apply only if you want to write changes.'
 })
 
 $presetDropdown.Add_SelectedIndexChanged({
