@@ -1,5 +1,11 @@
 # Simple Origin
 
+![License](https://img.shields.io/badge/license-MIT-97CA00?style=flat-square)
+![Platform](https://img.shields.io/badge/platform-Windows%2010%2F11-0078D4?style=flat-square)
+![PowerShell](https://img.shields.io/badge/PowerShell-5.1%2B-5391FE?style=flat-square)
+![Latest Release](https://img.shields.io/github/v/release/unmatched785/SimpleOrigin?display_name=tag&style=flat-square)
+![Repo Stars](https://img.shields.io/github/stars/unmatched785/SimpleOrigin?style=flat-square)
+
 Simple Origin is a Windows PowerShell GUI for configuring **Brave managed policies** on **regular Brave**.
 
 It gives you:
@@ -8,13 +14,28 @@ It gives you:
 - preset-based setup for common configurations
 - DNS-over-HTTPS presets
 - import/export for repeatable setups
+- a **self-healing one-line launcher** for `irm ... | iex`
 
+![simpleorigin](https://github.com/unmatched785/SimpleOrigin/blob/main/simpleorigin.png)
 
+## One-line launch
 
+```powershell
+irm https://raw.githubusercontent.com/unmatched785/SimpleOrigin/main/SimpleOrigin.ps1|iex
+```
 
-![simpleorigin](https://github.com/unmatched785/SimpleOrigin/blob/9dd4b2f62e99c22b08a4a216c61f662e889c70e4/simpleorigin.png)
+### What makes this safer than a plain raw-script launch
 
+Simple Origin now includes a bootstrap path for `irm ... | iex` execution.
 
+If it detects that it was launched directly from memory instead of from a file, it will:
+
+1. download a fresh copy to `%TEMP%\SimpleOrigin\SimpleOrigin.ps1`
+2. write that copy as UTF-8
+3. unblock it if needed
+4. relaunch from the temp file with `-ExecutionPolicy Bypass`
+
+This reduces the encoding and parser issues that sometimes appear on other Windows laptops when raw PowerShell scripts are executed directly.
 
 ## What this project is
 
@@ -32,9 +53,9 @@ Simple Origin is **not** that product. This repo exists for users who want a cle
 
 ## Included presets
 
-### Origin + Hardening — Recommended
+### Origin + Hardening - Recommended
 
-The default recommended preset. This combines an Origin-like Brave feature reduction set with a practical privacy-hardening layer.
+The default preset. It combines Origin-like Brave feature reduction with practical privacy hardening.
 
 ### Origin
 
@@ -52,12 +73,12 @@ Manual mode. Choose each policy toggle yourself.
 
 **Recommended default: User (HKCU).**
 
-Use **User (HKCU) — Recommended** for most personal PCs. Use **Machine (HKLM)** only when you intentionally want system-wide Brave policy for all users on the device.
+Use **User (HKCU) - Recommended** for most personal PCs. Use **Machine (HKLM)** only when you intentionally want system-wide Brave policy for all users on the device.
 
 For the keys managed by this tool, **Apply** tries to make the selected scope authoritative by:
 
-1. writing the selected state to the chosen scope, and
-2. clearing the same managed keys from the other scope when possible.
+1. writing the selected state to the chosen scope
+2. clearing the same managed keys from the other scope when possible
 
 This helps avoid stale mixed HKCU/HKLM states where the UI says one thing but Brave still prefers another because of policy precedence.
 
@@ -84,13 +105,13 @@ That means:
 
 - it only exposes settings that map cleanly to Brave / Chromium policy
 - it intentionally avoids pretending that every Brave setting has a safe policy equivalent
-- it prefers correctness over “more toggles”
+- it prefers correctness over adding fake toggles
 
 ### Important note about Brave Shields
 
 This project intentionally **does not** expose a fake global **Disable Brave Shields** toggle.
 
-The Brave policy surface for Shields uses **site lists**, not a true “disable Shields everywhere” global policy.
+The Brave policy surface for Shields uses **site lists**, not a true global on/off policy.
 
 A future release may add a **site-specific Shields allow/disable list editor**, but that is separate from a global toggle.
 
@@ -100,80 +121,33 @@ Brave supports Chromium policies plus Brave-specific policies, but **policy avai
 
 Because of that:
 
-- some newer Brave-specific policies may only work on newer Brave builds
+- some Brave-specific policies only work on newer Brave builds
 - `brave://policy` is the best place to verify what actually took effect
-- unsupported policy keys may not show or may simply be ignored by older versions
+- unsupported policy keys may not show up or may simply be ignored
 
-## Running locally
+## Local launch
 
-Open PowerShell in the same folder and run:
-
-```powershell
-Set-ExecutionPolicy -Scope Process Bypass
-.\SimpleOrigin.ps1
-```
-
-## Repository layout
-
-This repository now keeps **editable source files** in `src/` and keeps **one compiled distributable file** at the repo root:
-
-```text
-SimpleOrigin/
-├── Compile.ps1
-├── SimpleOrigin.ps1
-├── LICENSE
-├── README.md
-└── src/
-    ├── 00-ParametersAndAssemblies.ps1
-    ├── 01-CustomCheckBox.ps1
-    ├── 10-StartupAndPaths.ps1
-    ├── 20-PolicyCatalog.ps1
-    ├── 30-RegistryAndDns.ps1
-    ├── 40-ThemeRegistration.ps1
-    ├── 50-UiScaffold.ps1
-    ├── 60-UiBuilders.ps1
-    ├── 70-StateAndTheme.ps1
-    ├── 80-EventHandlers.ps1
-    └── 90-EntryPoint.ps1
-```
-
-### For users
-
-You do **not** need to build anything. Just run the root `SimpleOrigin.ps1` file.
-
-### For maintainers
-
-Edit the files in `src/`, then rebuild the single-file release with:
+If you already downloaded the file manually, open PowerShell in the same folder and run:
 
 ```powershell
-.\Compile.ps1
-```
-
-That regenerates `SimpleOrigin.ps1` at the repo root.
-
-## One-line GitHub raw launch
-
-For a public repository:
-
-```powershell
-iwr "https://raw.githubusercontent.com/unmatched785/SimpleOrigin/main/SimpleOrigin.ps1" -OutFile "SimpleOrigin.ps1"; .\SimpleOrigin.ps1
-```
-
-If Windows blocks direct local script execution:
-
-```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -Command "iwr 'https://raw.githubusercontent.com/unmatched785/SimpleOrigin/main/SimpleOrigin.ps1' -OutFile $env:TEMP\SimpleOrigin.ps1; & $env:TEMP\SimpleOrigin.ps1"
+powershell -ExecutionPolicy Bypass -File .\SimpleOrigin.ps1
 ```
 
 ## Safety notes
 
 - Light theme is the default.
-- Dark mode is optional via the top-right toggle.
+- Dark mode is optional via the top-right theme button.
 - Restart Brave after applying settings.
 - Verify results in `brave://policy` if needed.
 - **Reset Managed Policies** removes the Brave policy values touched by this tool from both HKCU and HKLM.
 - If you declined elevation, User-scope Apply still works, but clearing conflicting Machine-scope values may fail.
 - This tool does not modify Brave binaries and does not try to impersonate the separate Brave Origin product.
+
+## Badge note
+
+The badges at the top of this README are standard **README badges** generated with **Shields.io** and GitHub metadata.
+
+You can make the same kind of badges for release version, stars, downloads, platform, license, PowerShell version, and more.
 
 ## Roadmap
 
