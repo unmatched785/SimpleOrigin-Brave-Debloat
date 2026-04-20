@@ -2,6 +2,9 @@ param(
     [switch]$NoAdminRelaunch
 )
 
+[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+$OutputEncoding = [System.Text.Encoding]::UTF8
+
 Add-Type -AssemblyName System.Windows.Forms
 Add-Type -AssemblyName System.Drawing
 
@@ -301,14 +304,14 @@ $hardeningPreset = @(
 $originAndHardeningPreset = @($originPreset + $hardeningPreset | Select-Object -Unique)
 
 $presets = [ordered]@{
-    'Origin + Hardening — Recommended' = $originAndHardeningPreset
+    'Origin + Hardening - Recommended' = $originAndHardeningPreset
     'Origin'                           = $originPreset
     'Hardening'                        = $hardeningPreset
     'Custom'                           = @()
 }
 
 $presetDescriptions = [ordered]@{
-    'Origin + Hardening — Recommended' = 'Recommended preset: Origin-like debloating plus practical privacy hardening.'
+    'Origin + Hardening - Recommended' = 'Recommended preset: Origin-like debloating plus practical privacy hardening.'
     'Origin'                           = 'Closest to Brave Origin upgrade-like behavior using managed policies.'
     'Hardening'                        = 'Privacy-oriented preset inspired by public Brave hardening guidance.'
     'Custom'                           = 'Manual selection. Choose each policy toggle yourself.'
@@ -575,7 +578,7 @@ $form.Font = New-Object System.Drawing.Font('Segoe UI', 9)
 $form.AutoScaleMode = [System.Windows.Forms.AutoScaleMode]::Dpi
 
 $titleLabel = New-Object System.Windows.Forms.Label
-$titleLabel.Text = 'Simple Origin v0.3.2 — Brave policy UI'
+$titleLabel.Text = 'Simple Origin v0.3.2 - Brave policy UI'
 $titleLabel.Location = New-Object System.Drawing.Point(24, 18)
 $titleLabel.Size = New-Object System.Drawing.Size(940, 30)
 $titleLabel.Font = New-Object System.Drawing.Font('Segoe UI', 11.5, [System.Drawing.FontStyle]::Bold)
@@ -594,10 +597,10 @@ $form.Controls.Add($subLabel)
 Register-MutedLabel $subLabel
 
 $themeButton = New-Object System.Windows.Forms.Button
-$themeButton.Text = '☾'
-$themeButton.Location = New-Object System.Drawing.Point(1124, 18)
-$themeButton.Size = New-Object System.Drawing.Size(52, 34)
-$themeButton.Font = New-Object System.Drawing.Font('Segoe UI Symbol', 12, [System.Drawing.FontStyle]::Bold)
+$themeButton.Text = 'Theme'
+$themeButton.Location = New-Object System.Drawing.Point(1104, 18)
+$themeButton.Size = New-Object System.Drawing.Size(72, 34)
+$themeButton.Font = New-Object System.Drawing.Font('Segoe UI', 9, [System.Drawing.FontStyle]::Bold)
 $themeButton.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
 $themeButton.TabStop = $false
 $form.Controls.Add($themeButton)
@@ -642,8 +645,8 @@ $scopeDropdown.Location = New-Object System.Drawing.Point(555, 78)
 $scopeDropdown.Size = New-Object System.Drawing.Size(255, 28)
 $scopeDropdown.DropDownStyle = [System.Windows.Forms.ComboBoxStyle]::DropDownList
 $scopeDropdown.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
-$scopeDropdown.Items.AddRange(@('User (HKCU) — Recommended','Machine (HKLM)'))
-$scopeDropdown.SelectedItem = 'User (HKCU) — Recommended'
+$scopeDropdown.Items.AddRange(@('User (HKCU) - Recommended','Machine (HKLM)'))
+$scopeDropdown.SelectedItem = 'User (HKCU) - Recommended'
 $form.Controls.Add($scopeDropdown)
 Register-ThemedControl $scopeDropdown
 
@@ -657,7 +660,7 @@ $form.Controls.Add($scopeHintLabel)
 Register-MutedLabel $scopeHintLabel
 
 $presetDescriptionLabel = New-Object System.Windows.Forms.Label
-$presetDescriptionLabel.Text = [string]$presetDescriptions['Origin + Hardening — Recommended']
+$presetDescriptionLabel.Text = [string]$presetDescriptions['Origin + Hardening - Recommended']
 $presetDescriptionLabel.Location = New-Object System.Drawing.Point(24, 108)
 $presetDescriptionLabel.Size = New-Object System.Drawing.Size(1140, 20)
 $presetDescriptionLabel.AutoEllipsis = $true
@@ -716,9 +719,9 @@ function Add-FeatureCheckboxes {
             $subheader = New-Object System.Windows.Forms.Label
             $subheader.Text = switch ($group.Name) {
                 'Telemetry'   { 'Telemetry and Reporting' }
-                'Privacy'     { 'Privacy & Security' }
+                'Privacy'     { 'Privacy and Security' }
                 'Brave'       { 'Brave Features' }
-                'Performance' { 'Performance & Bloat' }
+                'Performance' { 'Performance and Bloat' }
                 default       { $group.Name }
             }
             $subheader.Location = New-Object System.Drawing.Point(18, $currentY)
@@ -886,7 +889,7 @@ function Apply-Theme {
             Subheader      = [System.Drawing.Color]::Gainsboro
             ButtonAccent   = [System.Drawing.Color]::FromArgb(255, 52, 52, 52)
         }
-        $themeButton.Text = '☀'
+        $themeButton.Text = 'Light'
     }
     else {
         $colors = @{
@@ -900,7 +903,7 @@ function Apply-Theme {
             Subheader      = [System.Drawing.Color]::FromArgb(255, 75, 75, 75)
             ButtonAccent   = [System.Drawing.Color]::FromArgb(255, 248, 249, 251)
         }
-        $themeButton.Text = '☾'
+        $themeButton.Text = 'Dark'
     }
 
     $form.BackColor = $colors.FormBack
@@ -1106,13 +1109,13 @@ function Initialize-CurrentSettings {
 
     $matchingPreset = Get-MatchingPresetName
     if ((Get-CurrentFeatureIdSet).Count -eq 0) {
-        $presetDropdown.SelectedItem = 'Origin + Hardening — Recommended'
+        $presetDropdown.SelectedItem = 'Origin + Hardening - Recommended'
     }
     elseif ($presetDropdown.Items.Contains($matchingPreset)) {
         $presetDropdown.SelectedItem = $matchingPreset
     }
     else {
-        $presetDropdown.SelectedItem = 'Origin + Hardening — Recommended'
+        $presetDropdown.SelectedItem = 'Origin + Hardening - Recommended'
     }
 
     Update-PresetDescription
