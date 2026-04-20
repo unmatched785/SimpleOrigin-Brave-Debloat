@@ -7,12 +7,12 @@ All notable changes to this project will be documented in this file.
 ### Fixed
 
 - Hardened startup sizing so the laptop-friendly layout falls back safely if working-area detection is unavailable.
-- Updated the one-line launcher bootstrap to write the temp script as UTF-8 with BOM for Windows PowerShell 5.1 compatibility.
-- Replaced non-ASCII UI text in the published launcher and now build `SimpleOrigin.ps1` with UTF-8 BOM to reduce locale-sensitive parse failures on some laptops.
+- Updated the one-line launcher bootstrap to write the temp script as UTF-8 without BOM so the `irm ... | iex` path does not surface `﻿param` parse failures.
+- Replaced non-ASCII UI text in the published launcher and now build `SimpleOrigin.ps1` without BOM so the raw-launch path and the temp-file relaunch stay byte-for-byte aligned.
 
 ### Notes
 
-- This is a stabilization patch for `0.4.0`. The main user-facing goal is to make `irm https://raw.githubusercontent.com/unmatched785/SimpleOrigin/main/SimpleOrigin.ps1 | iex` behave consistently across desktops and laptops.
+- This is a stabilization patch for `0.4.0`. The main user-facing goal is to make `irm https://raw.githubusercontent.com/unmatched785/SimpleOrigin-Brave-Debloat/main/SimpleOrigin.ps1 | iex` behave consistently across desktops and laptops.
 
 ## 0.4.0 - 2026-04-20
 
@@ -28,4 +28,4 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
-- Fixed the one-line launcher bootstrap used by `irm https://raw.githubusercontent.com/unmatched785/SimpleOrigin/main/SimpleOrigin.ps1 | iex` so the temp-file UTF-8 write path no longer throws a PowerShell parser error during raw launches.
+- Fixed the one-line launcher bootstrap used by `irm https://raw.githubusercontent.com/unmatched785/SimpleOrigin-Brave-Debloat/main/SimpleOrigin.ps1 | iex` so the temp-file UTF-8 write path no longer throws a PowerShell parser error during raw launches.

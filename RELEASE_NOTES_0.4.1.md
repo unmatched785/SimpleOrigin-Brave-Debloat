@@ -1,4 +1,4 @@
-# Simple Origin 0.4.1
+# Simple Origin - Brave Debloat 0.4.1
 
 `0.4.1` is a stabilization patch for the `0.4.0` release.
 
@@ -7,8 +7,8 @@ This update focuses on one thing: making the one-line launcher and the desktop a
 ## Highlights
 
 - Improved startup sizing fallback so the app still opens safely when working-area detection behaves differently on some laptops.
-- Updated the `irm ... | iex` bootstrap path to write the temp script as UTF-8 with BOM for better Windows PowerShell 5.1 compatibility.
-- Replaced non-ASCII UI text in the published launcher and now build `SimpleOrigin.ps1` with UTF-8 BOM to reduce locale-sensitive parse failures.
+- Updated the `irm ... | iex` bootstrap path to write the temp script as UTF-8 without BOM so the launcher no longer trips over `﻿param` at line 1.
+- Replaced non-ASCII UI text in the published launcher and now build `SimpleOrigin.ps1` without BOM so the raw-launch path stays parser-safe.
 
 ## Why this patch exists
 
@@ -19,7 +19,7 @@ Some systems could launch the app normally while others failed immediately with 
 You can keep using the same one-line command:
 
 ```powershell
-irm https://raw.githubusercontent.com/unmatched785/SimpleOrigin/main/SimpleOrigin.ps1|iex
+irm https://raw.githubusercontent.com/unmatched785/SimpleOrigin-Brave-Debloat/main/SimpleOrigin.ps1|iex
 ```
 
 ## Included from 0.4.0

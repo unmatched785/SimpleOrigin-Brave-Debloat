@@ -12,7 +12,7 @@ if (-not $NoAdminRelaunch -and -not (Test-IsAdmin)) {
     } catch {
         [System.Windows.Forms.MessageBox]::Show(
             "Administrator rights were not granted. The app will continue, but machine-level Apply/Reset may fail.",
-            "Simple Origin",
+            $script:appDisplayName,
             [System.Windows.Forms.MessageBoxButtons]::OK,
             [System.Windows.Forms.MessageBoxIcon]::Warning
         ) | Out-Null
@@ -23,6 +23,7 @@ $machineRegistryPath = "HKLM:\SOFTWARE\Policies\BraveSoftware\Brave"
 $userRegistryPath    = "HKCU:\SOFTWARE\Policies\BraveSoftware\Brave"
 $script:registryPath = $machineRegistryPath
 $script:toolVersion  = '0.4.1'
+$script:appWindowTitle = "$($script:appDisplayName) v$($script:toolVersion)"
 
 function Ensure-PolicyPathExists {
     param([string]$Path)

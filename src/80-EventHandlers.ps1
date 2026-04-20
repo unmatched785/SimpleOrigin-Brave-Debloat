@@ -15,7 +15,7 @@ $applyButton.Add_Click({
     if ($scopeInfo.ScopeName -eq 'Machine' -and -not (Test-IsAdmin)) {
         [System.Windows.Forms.MessageBox]::Show(
             'Machine scope requires administrator rights. Switch Write scope to User (HKCU) or relaunch as admin.',
-            'Simple Origin',
+            $script:appDisplayName,
             [System.Windows.Forms.MessageBoxButtons]::OK,
             [System.Windows.Forms.MessageBoxIcon]::Warning
         ) | Out-Null
@@ -25,7 +25,7 @@ $applyButton.Add_Click({
     if (([string]$dnsDropdown.SelectedItem) -eq 'custom' -and [string]::IsNullOrWhiteSpace($dnsTemplateBox.Text)) {
         [System.Windows.Forms.MessageBox]::Show(
             'Custom DoH requires a template URL, e.g. https://cloudflare-dns.com/dns-query',
-            'Simple Origin',
+            $script:appDisplayName,
             [System.Windows.Forms.MessageBoxButtons]::OK,
             [System.Windows.Forms.MessageBoxIcon]::Warning
         ) | Out-Null
@@ -67,7 +67,7 @@ $applyButton.Add_Click({
         $statusLabel.Text = "Applied to $($scopeInfo.ScopeName) scope. Some $otherScopeName-scope keys could not be cleared."
         [System.Windows.Forms.MessageBox]::Show(
             "Settings were written to $($scopeInfo.ScopeName) scope. However, some $otherScopeName-scope keys could not be cleared, so Brave may still prefer those values. Use Reset Managed Policies or relaunch as admin if you want a clean single-scope state.",
-            'Simple Origin',
+            $script:appDisplayName,
             [System.Windows.Forms.MessageBoxButtons]::OK,
             [System.Windows.Forms.MessageBoxIcon]::Warning
         ) | Out-Null
@@ -75,8 +75,8 @@ $applyButton.Add_Click({
     else {
         $statusLabel.Text = "Applied to $($scopeInfo.ScopeName) scope. Restart Brave."
         [System.Windows.Forms.MessageBox]::Show(
-            "Settings applied. For the keys managed by Simple Origin, $($scopeInfo.ScopeName) scope is now authoritative. Restart Brave and check brave://policy if you want to verify the result.",
-            'Simple Origin',
+            "Settings applied. For the keys managed by this tool, $($scopeInfo.ScopeName) scope is now authoritative. Restart Brave and check brave://policy if you want to verify the result.",
+            $script:appDisplayName,
             [System.Windows.Forms.MessageBoxButtons]::OK,
             [System.Windows.Forms.MessageBoxIcon]::Information
         ) | Out-Null
@@ -88,7 +88,7 @@ $resetButton.Add_Click({
     if ($scopeSummary.HasMachine -and -not (Test-IsAdmin)) {
         [System.Windows.Forms.MessageBox]::Show(
             'Reset Managed Policies needs administrator rights when Machine (HKLM) keys are present.',
-            'Simple Origin',
+            $script:appDisplayName,
             [System.Windows.Forms.MessageBoxButtons]::OK,
             [System.Windows.Forms.MessageBoxIcon]::Warning
         ) | Out-Null
@@ -97,7 +97,7 @@ $resetButton.Add_Click({
 
     $confirm = [System.Windows.Forms.MessageBox]::Show(
         'This removes the managed Brave policies touched by this tool from both HKLM and HKCU. Continue?',
-        'Simple Origin',
+        $script:appDisplayName,
         [System.Windows.Forms.MessageBoxButtons]::YesNo,
         [System.Windows.Forms.MessageBoxIcon]::Warning
     )
@@ -119,9 +119,9 @@ $resetButton.Add_Click({
 $exportButton.Add_Click({
     $dialog = New-Object System.Windows.Forms.SaveFileDialog
     $dialog.Filter = 'JSON files (*.json)|*.json|All files (*.*)|*.*'
-    $dialog.Title = 'Export Simple Origin Settings'
+    $dialog.Title = "Export $($script:appDisplayName) Settings"
     $dialog.InitialDirectory = [Environment]::GetFolderPath('MyDocuments')
-    $dialog.FileName = 'SimpleOriginSettings.json'
+    $dialog.FileName = $script:settingsFileName
 
     if ($dialog.ShowDialog() -ne [System.Windows.Forms.DialogResult]::OK) {
         return
@@ -146,7 +146,7 @@ $exportButton.Add_Click({
 $importButton.Add_Click({
     $dialog = New-Object System.Windows.Forms.OpenFileDialog
     $dialog.Filter = 'JSON files (*.json)|*.json|All files (*.*)|*.*'
-    $dialog.Title = 'Import Simple Origin Settings'
+    $dialog.Title = "Import $($script:appDisplayName) Settings"
     $dialog.InitialDirectory = [Environment]::GetFolderPath('MyDocuments')
 
     if ($dialog.ShowDialog() -ne [System.Windows.Forms.DialogResult]::OK) {
@@ -226,7 +226,7 @@ $importButton.Add_Click({
     catch {
         [System.Windows.Forms.MessageBox]::Show(
             "Import failed: $_",
-            'Simple Origin',
+            $script:appDisplayName,
             [System.Windows.Forms.MessageBoxButtons]::OK,
             [System.Windows.Forms.MessageBoxIcon]::Error
         ) | Out-Null

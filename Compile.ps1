@@ -43,7 +43,7 @@ $parts = foreach ($file in $sourceFiles) {
 }
 
 $compiled = [string]::Concat($parts)
-$utf8Bom = New-Object System.Text.UTF8Encoding($true)
-[System.IO.File]::WriteAllText($OutputPath, $compiled, $utf8Bom)
+$utf8NoBom = New-Object System.Text.UTF8Encoding($false)
+[System.IO.File]::WriteAllText($OutputPath, $compiled, $utf8NoBom)
 
 Write-Host "Built $OutputPath from $($sourceFiles.Count) source files."

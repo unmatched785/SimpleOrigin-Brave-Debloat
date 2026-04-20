@@ -159,7 +159,7 @@ function Set-DnsSettings {
         if ([string]::IsNullOrWhiteSpace($DnsTemplates)) {
             [System.Windows.Forms.MessageBox]::Show(
                 'Custom DoH requires a template URL, e.g. https://cloudflare-dns.com/dns-query',
-                'Simple Origin',
+                $script:appDisplayName,
                 [System.Windows.Forms.MessageBoxButtons]::OK,
                 [System.Windows.Forms.MessageBoxIcon]::Warning
             ) | Out-Null

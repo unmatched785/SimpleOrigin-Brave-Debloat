@@ -1,20 +1,26 @@
-﻿param(
+param(
     [switch]$NoAdminRelaunch,
     [switch]$Bootstrap
 )
 
-$script:RawSourceUrl = 'https://raw.githubusercontent.com/unmatched785/SimpleOrigin/main/SimpleOrigin.ps1'
+$script:repoOwner = 'unmatched785'
+$script:repoName = 'SimpleOrigin-Brave-Debloat'
+$script:scriptFileName = 'SimpleOrigin.ps1'
+$script:tempFolderName = 'SimpleOrigin-Brave-Debloat'
+$script:settingsFileName = 'SimpleOriginBraveDebloatSettings.json'
+$script:appDisplayName = 'Simple Origin - Brave Debloat'
+$script:RawSourceUrl = "https://raw.githubusercontent.com/$($script:repoOwner)/$($script:repoName)/main/$($script:scriptFileName)"
 
 function Invoke-SimpleOriginBootstrap {
     param([switch]$NoAdminRelaunch)
 
-    $tempRoot = Join-Path $env:TEMP 'SimpleOrigin'
-    $tempPath = Join-Path $tempRoot 'SimpleOrigin.ps1'
+    $tempRoot = Join-Path $env:TEMP $script:tempFolderName
+    $tempPath = Join-Path $tempRoot $script:scriptFileName
 
     try {
         New-Item -ItemType Directory -Path $tempRoot -Force | Out-Null
         $content = Invoke-RestMethod -Uri $script:RawSourceUrl -Headers @{ 'Cache-Control' = 'no-cache' }
-        [System.IO.File]::WriteAllText($tempPath, [string]$content, [System.Text.UTF8Encoding]::new($true))
+        [System.IO.File]::WriteAllText($tempPath, [string]$content, [System.Text.UTF8Encoding]::new($false))
         Unblock-File -Path $tempPath -ErrorAction SilentlyContinue
 
         $arguments = @(
@@ -31,7 +37,7 @@ function Invoke-SimpleOriginBootstrap {
         return $true
     }
     catch {
-        Write-Error "SimpleOrigin bootstrap failed: $($_.Exception.Message)"
+        Write-Error "$($script:appDisplayName) bootstrap failed: $($_.Exception.Message)"
         return $false
     }
 }
@@ -210,7 +216,7 @@ if (-not $NoAdminRelaunch -and -not (Test-IsAdmin)) {
     } catch {
         [System.Windows.Forms.MessageBox]::Show(
             "Administrator rights were not granted. The app will continue, but machine-level Apply/Reset may fail.",
-            "Simple Origin",
+            $script:appDisplayName,
             [System.Windows.Forms.MessageBoxButtons]::OK,
             [System.Windows.Forms.MessageBoxIcon]::Warning
         ) | Out-Null
@@ -221,6 +227,7 @@ $machineRegistryPath = "HKLM:\SOFTWARE\Policies\BraveSoftware\Brave"
 $userRegistryPath    = "HKCU:\SOFTWARE\Policies\BraveSoftware\Brave"
 $script:registryPath = $machineRegistryPath
 $script:toolVersion  = '0.4.1'
+$script:appWindowTitle = "$($script:appDisplayName) v$($script:toolVersion)"
 
 function Ensure-PolicyPathExists {
     param([string]$Path)
@@ -529,7 +536,7 @@ function Set-DnsSettings {
         if ([string]::IsNullOrWhiteSpace($DnsTemplates)) {
             [System.Windows.Forms.MessageBox]::Show(
                 'Custom DoH requires a template URL, e.g. https://cloudflare-dns.com/dns-query',
-                'Simple Origin',
+                $script:appDisplayName,
                 [System.Windows.Forms.MessageBoxButtons]::OK,
                 [System.Windows.Forms.MessageBoxIcon]::Warning
             ) | Out-Null
@@ -624,7 +631,7 @@ catch {
     $initialFormHeight = $designFormSize.Height
 }
 
-$form.Text = 'Simple Origin v0.4.1'
+$form.Text = $script:appWindowTitle
 $form.Size = New-Object System.Drawing.Size($initialFormWidth, $initialFormHeight)
 $form.MinimumSize = $minimumFormSize
 $form.StartPosition = 'CenterScreen'
@@ -636,7 +643,7 @@ $form.AutoScroll = $true
 $form.AutoScrollMinSize = $designFormSize
 
 $titleLabel = New-Object System.Windows.Forms.Label
-$titleLabel.Text = 'Simple Origin v0.4.1 - Brave policy UI'
+$titleLabel.Text = "$($script:appWindowTitle) - Brave policy UI"
 $titleLabel.Location = New-Object System.Drawing.Point(24, 18)
 $titleLabel.Size = New-Object System.Drawing.Size(940, 30)
 $titleLabel.Font = New-Object System.Drawing.Font('Segoe UI', 11.5, [System.Drawing.FontStyle]::Bold)
@@ -718,7 +725,7 @@ $form.Controls.Add($scopeDropdown)
 Register-ThemedControl $scopeDropdown
 
 $scopeHintLabel = New-Object System.Windows.Forms.Label
-$scopeHintLabel.Text = 'Recommended: User (HKCU) for most personal PCs. Apply makes the selected scope authoritative for Simple Origin-managed keys when possible.'
+$scopeHintLabel.Text = "Recommended: User (HKCU) for most personal PCs. Apply makes the selected scope authoritative for this tool's managed keys when possible."
 $scopeHintLabel.Location = New-Object System.Drawing.Point(868, 76)
 $scopeHintLabel.Size = New-Object System.Drawing.Size(297, 40)
 $scopeHintLabel.AutoEllipsis = $true
@@ -1232,7 +1239,7 @@ $applyButton.Add_Click({
     if ($scopeInfo.ScopeName -eq 'Machine' -and -not (Test-IsAdmin)) {
         [System.Windows.Forms.MessageBox]::Show(
             'Machine scope requires administrator rights. Switch Write scope to User (HKCU) or relaunch as admin.',
-            'Simple Origin',
+            $script:appDisplayName,
             [System.Windows.Forms.MessageBoxButtons]::OK,
             [System.Windows.Forms.MessageBoxIcon]::Warning
         ) | Out-Null
@@ -1242,7 +1249,7 @@ $applyButton.Add_Click({
     if (([string]$dnsDropdown.SelectedItem) -eq 'custom' -and [string]::IsNullOrWhiteSpace($dnsTemplateBox.Text)) {
         [System.Windows.Forms.MessageBox]::Show(
             'Custom DoH requires a template URL, e.g. https://cloudflare-dns.com/dns-query',
-            'Simple Origin',
+            $script:appDisplayName,
             [System.Windows.Forms.MessageBoxButtons]::OK,
             [System.Windows.Forms.MessageBoxIcon]::Warning
         ) | Out-Null
@@ -1284,7 +1291,7 @@ $applyButton.Add_Click({
         $statusLabel.Text = "Applied to $($scopeInfo.ScopeName) scope. Some $otherScopeName-scope keys could not be cleared."
         [System.Windows.Forms.MessageBox]::Show(
             "Settings were written to $($scopeInfo.ScopeName) scope. However, some $otherScopeName-scope keys could not be cleared, so Brave may still prefer those values. Use Reset Managed Policies or relaunch as admin if you want a clean single-scope state.",
-            'Simple Origin',
+            $script:appDisplayName,
             [System.Windows.Forms.MessageBoxButtons]::OK,
             [System.Windows.Forms.MessageBoxIcon]::Warning
         ) | Out-Null
@@ -1292,8 +1299,8 @@ $applyButton.Add_Click({
     else {
         $statusLabel.Text = "Applied to $($scopeInfo.ScopeName) scope. Restart Brave."
         [System.Windows.Forms.MessageBox]::Show(
-            "Settings applied. For the keys managed by Simple Origin, $($scopeInfo.ScopeName) scope is now authoritative. Restart Brave and check brave://policy if you want to verify the result.",
-            'Simple Origin',
+            "Settings applied. For the keys managed by this tool, $($scopeInfo.ScopeName) scope is now authoritative. Restart Brave and check brave://policy if you want to verify the result.",
+            $script:appDisplayName,
             [System.Windows.Forms.MessageBoxButtons]::OK,
             [System.Windows.Forms.MessageBoxIcon]::Information
         ) | Out-Null
@@ -1305,7 +1312,7 @@ $resetButton.Add_Click({
     if ($scopeSummary.HasMachine -and -not (Test-IsAdmin)) {
         [System.Windows.Forms.MessageBox]::Show(
             'Reset Managed Policies needs administrator rights when Machine (HKLM) keys are present.',
-            'Simple Origin',
+            $script:appDisplayName,
             [System.Windows.Forms.MessageBoxButtons]::OK,
             [System.Windows.Forms.MessageBoxIcon]::Warning
         ) | Out-Null
@@ -1314,7 +1321,7 @@ $resetButton.Add_Click({
 
     $confirm = [System.Windows.Forms.MessageBox]::Show(
         'This removes the managed Brave policies touched by this tool from both HKLM and HKCU. Continue?',
-        'Simple Origin',
+        $script:appDisplayName,
         [System.Windows.Forms.MessageBoxButtons]::YesNo,
         [System.Windows.Forms.MessageBoxIcon]::Warning
     )
@@ -1336,9 +1343,9 @@ $resetButton.Add_Click({
 $exportButton.Add_Click({
     $dialog = New-Object System.Windows.Forms.SaveFileDialog
     $dialog.Filter = 'JSON files (*.json)|*.json|All files (*.*)|*.*'
-    $dialog.Title = 'Export Simple Origin Settings'
+    $dialog.Title = "Export $($script:appDisplayName) Settings"
     $dialog.InitialDirectory = [Environment]::GetFolderPath('MyDocuments')
-    $dialog.FileName = 'SimpleOriginSettings.json'
+    $dialog.FileName = $script:settingsFileName
 
     if ($dialog.ShowDialog() -ne [System.Windows.Forms.DialogResult]::OK) {
         return
@@ -1363,7 +1370,7 @@ $exportButton.Add_Click({
 $importButton.Add_Click({
     $dialog = New-Object System.Windows.Forms.OpenFileDialog
     $dialog.Filter = 'JSON files (*.json)|*.json|All files (*.*)|*.*'
-    $dialog.Title = 'Import Simple Origin Settings'
+    $dialog.Title = "Import $($script:appDisplayName) Settings"
     $dialog.InitialDirectory = [Environment]::GetFolderPath('MyDocuments')
 
     if ($dialog.ShowDialog() -ne [System.Windows.Forms.DialogResult]::OK) {
@@ -1443,7 +1450,7 @@ $importButton.Add_Click({
     catch {
         [System.Windows.Forms.MessageBox]::Show(
             "Import failed: $_",
-            'Simple Origin',
+            $script:appDisplayName,
             [System.Windows.Forms.MessageBoxButtons]::OK,
             [System.Windows.Forms.MessageBoxIcon]::Error
         ) | Out-Null

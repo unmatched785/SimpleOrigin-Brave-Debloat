@@ -3,18 +3,24 @@ param(
     [switch]$Bootstrap
 )
 
-$script:RawSourceUrl = 'https://raw.githubusercontent.com/unmatched785/SimpleOrigin/main/SimpleOrigin.ps1'
+$script:repoOwner = 'unmatched785'
+$script:repoName = 'SimpleOrigin-Brave-Debloat'
+$script:scriptFileName = 'SimpleOrigin.ps1'
+$script:tempFolderName = 'SimpleOrigin-Brave-Debloat'
+$script:settingsFileName = 'SimpleOriginBraveDebloatSettings.json'
+$script:appDisplayName = 'Simple Origin - Brave Debloat'
+$script:RawSourceUrl = "https://raw.githubusercontent.com/$($script:repoOwner)/$($script:repoName)/main/$($script:scriptFileName)"
 
 function Invoke-SimpleOriginBootstrap {
     param([switch]$NoAdminRelaunch)
 
-    $tempRoot = Join-Path $env:TEMP 'SimpleOrigin'
-    $tempPath = Join-Path $tempRoot 'SimpleOrigin.ps1'
+    $tempRoot = Join-Path $env:TEMP $script:tempFolderName
+    $tempPath = Join-Path $tempRoot $script:scriptFileName
 
     try {
         New-Item -ItemType Directory -Path $tempRoot -Force | Out-Null
         $content = Invoke-RestMethod -Uri $script:RawSourceUrl -Headers @{ 'Cache-Control' = 'no-cache' }
-        [System.IO.File]::WriteAllText($tempPath, [string]$content, [System.Text.UTF8Encoding]::new($true))
+        [System.IO.File]::WriteAllText($tempPath, [string]$content, [System.Text.UTF8Encoding]::new($false))
         Unblock-File -Path $tempPath -ErrorAction SilentlyContinue
 
         $arguments = @(
@@ -31,7 +37,7 @@ function Invoke-SimpleOriginBootstrap {
         return $true
     }
     catch {
-        Write-Error "SimpleOrigin bootstrap failed: $($_.Exception.Message)"
+        Write-Error "$($script:appDisplayName) bootstrap failed: $($_.Exception.Message)"
         return $false
     }
 }

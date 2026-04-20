@@ -1,12 +1,12 @@
-# Simple Origin
+# Simple Origin - Brave Debloat
 
 ![License](https://img.shields.io/badge/license-MIT-97CA00?style=flat-square)
 ![Platform](https://img.shields.io/badge/platform-Windows%2010%2F11-0078D4?style=flat-square)
 ![PowerShell](https://img.shields.io/badge/PowerShell-5.1%2B-5391FE?style=flat-square)
-![Latest Release](https://img.shields.io/github/v/release/unmatched785/SimpleOrigin?display_name=tag&style=flat-square)
-![Repo Stars](https://img.shields.io/github/stars/unmatched785/SimpleOrigin?style=flat-square)
+![Latest Release](https://img.shields.io/github/v/release/unmatched785/SimpleOrigin-Brave-Debloat?display_name=tag&style=flat-square)
+![Repo Stars](https://img.shields.io/github/stars/unmatched785/SimpleOrigin-Brave-Debloat?style=flat-square)
 
-Simple Origin is a Windows PowerShell GUI for configuring **Brave managed policies** on **regular Brave**.
+`SimpleOrigin-Brave-Debloat` is a Windows PowerShell GUI for configuring **Brave managed policies** on **regular Brave**.
 
 It gives you:
 
@@ -18,22 +18,22 @@ It gives you:
 - import/export for repeatable setups
 - a **self-healing one-line launcher** for `irm ... | iex`
 
-![simpleorigin](https://github.com/unmatched785/SimpleOrigin/blob/main/simpleorigin.png)
+![simpleorigin](./simpleorigin.png)
 
 ## One-line launch
 
 ```powershell
-irm https://raw.githubusercontent.com/unmatched785/SimpleOrigin/main/SimpleOrigin.ps1|iex
+irm https://raw.githubusercontent.com/unmatched785/SimpleOrigin-Brave-Debloat/main/SimpleOrigin.ps1|iex
 ```
 
 ### What makes this safer than a plain raw-script launch
 
-Simple Origin now includes a bootstrap path for `irm ... | iex` execution.
+Simple Origin - Brave Debloat now includes a bootstrap path for `irm ... | iex` execution.
 
 If it detects that it was launched directly from memory instead of from a file, it will:
 
-1. download a fresh copy to `%TEMP%\SimpleOrigin\SimpleOrigin.ps1`
-2. write that copy as UTF-8 with BOM for Windows PowerShell compatibility
+1. download a fresh copy to `%TEMP%\SimpleOrigin-Brave-Debloat\SimpleOrigin.ps1`
+2. write that copy as UTF-8 without BOM so `irm ... | iex` and file relaunch use the same script bytes
 3. unblock it if needed
 4. relaunch from the temp file with `-ExecutionPolicy Bypass`
 
@@ -43,7 +43,7 @@ Release history is tracked in [CHANGELOG.md](./CHANGELOG.md).
 
 ## What this project is
 
-Simple Origin is a **policy UI for regular Brave**.
+Simple Origin - Brave Debloat is a **policy UI for regular Brave**.
 
 Its goal is to get close to **Brave Origin-like feature reduction** using **officially supported Brave / Chromium policy surfaces**.
 
@@ -53,7 +53,7 @@ It does **not** patch Brave binaries, and it does **not** try to reproduce the s
 
 Brave Origin itself is an official minimal Brave variant / upgrade.
 
-Simple Origin is **not** that product. This repo exists for users who want a cleaner, more controlled **regular Brave** setup through managed policies, while staying on the documented configuration path that Brave already supports.
+Simple Origin - Brave Debloat is **not** that product. This repo exists for users who want a cleaner, more controlled **regular Brave** setup through managed policies, while staying on the documented configuration path that Brave already supports.
 
 ## Included presets
 

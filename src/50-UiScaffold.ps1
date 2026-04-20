@@ -16,7 +16,7 @@ catch {
     $initialFormHeight = $designFormSize.Height
 }
 
-$form.Text = 'Simple Origin v0.4.1'
+$form.Text = $script:appWindowTitle
 $form.Size = New-Object System.Drawing.Size($initialFormWidth, $initialFormHeight)
 $form.MinimumSize = $minimumFormSize
 $form.StartPosition = 'CenterScreen'
@@ -28,7 +28,7 @@ $form.AutoScroll = $true
 $form.AutoScrollMinSize = $designFormSize
 
 $titleLabel = New-Object System.Windows.Forms.Label
-$titleLabel.Text = 'Simple Origin v0.4.1 - Brave policy UI'
+$titleLabel.Text = "$($script:appWindowTitle) - Brave policy UI"
 $titleLabel.Location = New-Object System.Drawing.Point(24, 18)
 $titleLabel.Size = New-Object System.Drawing.Size(940, 30)
 $titleLabel.Font = New-Object System.Drawing.Font('Segoe UI', 11.5, [System.Drawing.FontStyle]::Bold)
@@ -110,7 +110,7 @@ $form.Controls.Add($scopeDropdown)
 Register-ThemedControl $scopeDropdown
 
 $scopeHintLabel = New-Object System.Windows.Forms.Label
-$scopeHintLabel.Text = 'Recommended: User (HKCU) for most personal PCs. Apply makes the selected scope authoritative for Simple Origin-managed keys when possible.'
+$scopeHintLabel.Text = "Recommended: User (HKCU) for most personal PCs. Apply makes the selected scope authoritative for this tool's managed keys when possible."
 $scopeHintLabel.Location = New-Object System.Drawing.Point(868, 76)
 $scopeHintLabel.Size = New-Object System.Drawing.Size(297, 40)
 $scopeHintLabel.AutoEllipsis = $true
