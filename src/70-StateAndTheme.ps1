@@ -15,7 +15,7 @@ function Apply-Theme {
             Subheader      = [System.Drawing.Color]::Gainsboro
             ButtonAccent   = [System.Drawing.Color]::FromArgb(255, 52, 52, 52)
         }
-        $themeButton.Text = '☀'
+        $themeButton.Text = 'Light'
     }
     else {
         $colors = @{
@@ -29,7 +29,7 @@ function Apply-Theme {
             Subheader      = [System.Drawing.Color]::FromArgb(255, 75, 75, 75)
             ButtonAccent   = [System.Drawing.Color]::FromArgb(255, 248, 249, 251)
         }
-        $themeButton.Text = '☾'
+        $themeButton.Text = 'Dark'
     }
 
     $form.BackColor = $colors.FormBack
@@ -249,13 +249,13 @@ function Initialize-CurrentSettings {
 
     $matchingPreset = Get-MatchingPresetName
     if ((Get-CurrentFeatureIdSet).Count -eq 0) {
-        $presetDropdown.SelectedItem = 'Origin + Hardening — Recommended'
+        $presetDropdown.SelectedItem = 'Origin + Hardening - Recommended'
     }
     elseif ($presetDropdown.Items.Contains($matchingPreset)) {
         $presetDropdown.SelectedItem = $matchingPreset
     }
     else {
-        $presetDropdown.SelectedItem = 'Origin + Hardening — Recommended'
+        $presetDropdown.SelectedItem = 'Origin + Hardening - Recommended'
     }
 
     Update-PresetDescription

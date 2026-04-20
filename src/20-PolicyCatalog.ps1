@@ -85,14 +85,14 @@ $hardeningPreset = @(
 $originAndHardeningPreset = @($originPreset + $hardeningPreset | Select-Object -Unique)
 
 $presets = [ordered]@{
-    'Origin + Hardening — Recommended' = $originAndHardeningPreset
+    'Origin + Hardening - Recommended' = $originAndHardeningPreset
     'Origin'                           = $originPreset
     'Hardening'                        = $hardeningPreset
     'Custom'                           = @()
 }
 
 $presetDescriptions = [ordered]@{
-    'Origin + Hardening — Recommended' = 'Recommended preset: Origin-like debloating plus practical privacy hardening.'
+    'Origin + Hardening - Recommended' = 'Recommended preset: Origin-like debloating plus practical privacy hardening.'
     'Origin'                           = 'Closest to Brave Origin upgrade-like behavior using managed policies.'
     'Hardening'                        = 'Privacy-oriented preset inspired by public Brave hardening guidance.'
     'Custom'                           = 'Manual selection. Choose each policy toggle yourself.'

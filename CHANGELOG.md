@@ -19,3 +19,4 @@ All notable changes to this project will be documented in this file.
 
 - Fixed the one-line launcher bootstrap used by `irm https://raw.githubusercontent.com/unmatched785/SimpleOrigin/main/SimpleOrigin.ps1 | iex` so the temp-file UTF-8 write path no longer throws a PowerShell parser error during raw launches.
 - Updated the bootstrap temp-file encoding to UTF-8 with BOM so Windows PowerShell 5.1 machines don't misread non-ASCII script content during raw launches.
+- Replaced non-ASCII UI text in the script and now build the published launcher with UTF-8 BOM to reduce locale-sensitive parse failures on some laptops.
