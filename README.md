@@ -33,7 +33,7 @@ Simple Origin now includes a bootstrap path for `irm ... | iex` execution.
 If it detects that it was launched directly from memory instead of from a file, it will:
 
 1. download a fresh copy to `%TEMP%\SimpleOrigin\SimpleOrigin.ps1`
-2. write that copy as UTF-8
+2. write that copy as UTF-8 with BOM for Windows PowerShell compatibility
 3. unblock it if needed
 4. relaunch from the temp file with `-ExecutionPolicy Bypass`
 
