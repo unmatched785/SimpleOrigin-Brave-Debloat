@@ -9,6 +9,9 @@ It gives you:
 - DNS-over-HTTPS presets
 - import/export for repeatable setups
 
+
+[simpleorigin](https://github.com/unmatched785/SimpleOrigin/blob/9dd4b2f62e99c22b08a4a216c61f662e889c70e4/simpleorigin.png)
+
 ## What this project is
 
 Simple Origin is a **policy UI for regular Brave**.
