@@ -14,7 +14,7 @@ function Invoke-SimpleOriginBootstrap {
     try {
         New-Item -ItemType Directory -Path $tempRoot -Force | Out-Null
         $content = Invoke-RestMethod -Uri $script:RawSourceUrl -Headers @{ 'Cache-Control' = 'no-cache' }
-        [System.IO.File]::WriteAllText($tempPath, [string]$content, New-Object System.Text.UTF8Encoding($false))
+        [System.IO.File]::WriteAllText($tempPath, [string]$content, [System.Text.UTF8Encoding]::new($false))
         Unblock-File -Path $tempPath -ErrorAction SilentlyContinue
 
         $arguments = @(
