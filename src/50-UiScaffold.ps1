@@ -1,9 +1,20 @@
 $form = New-Object System.Windows.Forms.Form
 $designFormSize = New-Object System.Drawing.Size(1220, 1175)
-$minimumFormSize = New-Object System.Drawing.Size(1024, 760)
-$workingArea = [System.Windows.Forms.Screen]::PrimaryScreen.WorkingArea
-$initialFormWidth = [Math]::Min($designFormSize.Width, [Math]::Max($minimumFormSize.Width, ($workingArea.Width - 40)))
-$initialFormHeight = [Math]::Min($designFormSize.Height, [Math]::Max($minimumFormSize.Height, ($workingArea.Height - 40)))
+$minimumFormSize = New-Object System.Drawing.Size(780, 600)
+$initialFormWidth = $designFormSize.Width
+$initialFormHeight = $designFormSize.Height
+
+try {
+    $workingArea = [System.Windows.Forms.SystemInformation]::WorkingArea
+    if ($workingArea.Width -gt 0 -and $workingArea.Height -gt 0) {
+        $initialFormWidth = [Math]::Min($designFormSize.Width, [Math]::Max($minimumFormSize.Width, ($workingArea.Width - 40)))
+        $initialFormHeight = [Math]::Min($designFormSize.Height, [Math]::Max($minimumFormSize.Height, ($workingArea.Height - 40)))
+    }
+}
+catch {
+    $initialFormWidth = $designFormSize.Width
+    $initialFormHeight = $designFormSize.Height
+}
 
 $form.Text = 'Simple Origin v0.4.0'
 $form.Size = New-Object System.Drawing.Size($initialFormWidth, $initialFormHeight)
