@@ -16,7 +16,7 @@ catch {
     $initialFormHeight = $designFormSize.Height
 }
 
-$form.Text = 'Simple Origin v0.4.0'
+$form.Text = 'Simple Origin v0.4.1'
 $form.Size = New-Object System.Drawing.Size($initialFormWidth, $initialFormHeight)
 $form.MinimumSize = $minimumFormSize
 $form.StartPosition = 'CenterScreen'
@@ -28,7 +28,7 @@ $form.AutoScroll = $true
 $form.AutoScrollMinSize = $designFormSize
 
 $titleLabel = New-Object System.Windows.Forms.Label
-$titleLabel.Text = 'Simple Origin v0.4.0 - Brave policy UI'
+$titleLabel.Text = 'Simple Origin v0.4.1 - Brave policy UI'
 $titleLabel.Location = New-Object System.Drawing.Point(24, 18)
 $titleLabel.Size = New-Object System.Drawing.Size(940, 30)
 $titleLabel.Font = New-Object System.Drawing.Font('Segoe UI', 11.5, [System.Drawing.FontStyle]::Bold)
