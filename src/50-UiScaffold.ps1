@@ -1,5 +1,5 @@
 $form = New-Object System.Windows.Forms.Form
-$designFormSize = New-Object System.Drawing.Size(1220, 1360)
+$designFormSize = New-Object System.Drawing.Size(1220, 1540)
 $minimumFormSize = New-Object System.Drawing.Size(780, 600)
 $initialFormWidth = $designFormSize.Width
 $initialFormHeight = $designFormSize.Height
@@ -28,7 +28,7 @@ $form.AutoScroll = $true
 $form.AutoScrollMinSize = $designFormSize
 
 $titleLabel = New-Object System.Windows.Forms.Label
-$titleLabel.Text = "$($script:appWindowTitle) - Brave policy UI"
+$titleLabel.Text = $script:appDisplayName
 $titleLabel.Location = New-Object System.Drawing.Point(24, 18)
 $titleLabel.Size = New-Object System.Drawing.Size(940, 30)
 $titleLabel.Font = New-Object System.Drawing.Font('Segoe UI', 11.5, [System.Drawing.FontStyle]::Bold)

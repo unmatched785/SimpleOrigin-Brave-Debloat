@@ -97,7 +97,7 @@ function Add-FeatureCheckboxes {
 Add-FeatureCheckboxes -Panel $leftPanel  -Features ($featureCatalog | Where-Object { $_.Category -in @('Telemetry','Privacy') -and (-not $_.ContainsKey('Advanced') -or -not $_.Advanced) }) -StartY 38 -ShowSubheaders
 Add-FeatureCheckboxes -Panel $rightPanel -Features ($featureCatalog | Where-Object { $_.Category -in @('Brave','Performance') -and (-not $_.ContainsKey('Advanced') -or -not $_.Advanced) }) -StartY 38 -ShowSubheaders
 
-$advancedGroup = New-SectionPanel -Title 'Advanced / High Friction' -X 24 -Y 935 -Width 565 -Height 290
+$advancedGroup = New-SectionPanel -Title 'Advanced / High Friction' -X 24 -Y 935 -Width 565 -Height 470
 
 $advancedHintLabel = New-Object System.Windows.Forms.Label
 $advancedHintLabel.Text = 'These toggles can break expected browser workflows or add strong restrictions. Leave them unchecked unless you want the managed-policy override.'
@@ -169,7 +169,7 @@ Register-MutedLabel $dnsHintLabel
 
 $exportButton = New-Object System.Windows.Forms.Button
 $exportButton.Text = 'Export'
-$exportButton.Location = New-Object System.Drawing.Point(24, 1242)
+$exportButton.Location = New-Object System.Drawing.Point(24, 1422)
 $exportButton.Size = New-Object System.Drawing.Size(112, 32)
 $exportButton.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
 $form.Controls.Add($exportButton)
@@ -178,7 +178,7 @@ $script:actionButtons['export'] = $exportButton
 
 $importButton = New-Object System.Windows.Forms.Button
 $importButton.Text = 'Import'
-$importButton.Location = New-Object System.Drawing.Point(148, 1242)
+$importButton.Location = New-Object System.Drawing.Point(148, 1422)
 $importButton.Size = New-Object System.Drawing.Size(112, 32)
 $importButton.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
 $form.Controls.Add($importButton)
@@ -187,7 +187,7 @@ $script:actionButtons['import'] = $importButton
 
 $applyButton = New-Object System.Windows.Forms.Button
 $applyButton.Text = 'Apply'
-$applyButton.Location = New-Object System.Drawing.Point(936, 1242)
+$applyButton.Location = New-Object System.Drawing.Point(936, 1422)
 $applyButton.Size = New-Object System.Drawing.Size(112, 32)
 $applyButton.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
 $form.Controls.Add($applyButton)
@@ -196,7 +196,7 @@ $script:actionButtons['apply'] = $applyButton
 
 $resetButton = New-Object System.Windows.Forms.Button
 $resetButton.Text = 'Reset Managed`nPolicies'
-$resetButton.Location = New-Object System.Drawing.Point(1060, 1242)
+$resetButton.Location = New-Object System.Drawing.Point(1060, 1422)
 $resetButton.Size = New-Object System.Drawing.Size(112, 40)
 $resetButton.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
 $form.Controls.Add($resetButton)
@@ -205,7 +205,7 @@ $script:actionButtons['reset'] = $resetButton
 
 $statusLabel = New-Object System.Windows.Forms.Label
 $statusLabel.Text = 'Ready. Scope-aware apply is enabled.'
-$statusLabel.Location = New-Object System.Drawing.Point(290, 1248)
+$statusLabel.Location = New-Object System.Drawing.Point(290, 1428)
 $statusLabel.Size = New-Object System.Drawing.Size(620, 20)
 $statusLabel.AutoEllipsis = $true
 $statusLabel.UseMnemonic = $false

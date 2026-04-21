@@ -22,8 +22,8 @@ if (-not $NoAdminRelaunch -and -not (Test-IsAdmin)) {
 $machineRegistryPath = "HKLM:\SOFTWARE\Policies\BraveSoftware\Brave"
 $userRegistryPath    = "HKCU:\SOFTWARE\Policies\BraveSoftware\Brave"
 $script:registryPath = $machineRegistryPath
-$script:toolVersion  = '0.4.1'
-$script:appWindowTitle = "$($script:appDisplayName) v$($script:toolVersion)"
+$script:toolVersion  = '0.4.2'
+$script:appWindowTitle = $script:appDisplayName
 
 function Ensure-PolicyPathExists {
     param([string]$Path)
