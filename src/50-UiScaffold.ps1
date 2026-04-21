@@ -1,5 +1,5 @@
 $form = New-Object System.Windows.Forms.Form
-$designFormSize = New-Object System.Drawing.Size(1180, 1040)
+$designFormSize = New-Object System.Drawing.Size(1180, 900)
 $minimumFormSize = New-Object System.Drawing.Size(780, 600)
 $initialFormWidth = $designFormSize.Width
 $initialFormHeight = $designFormSize.Height
@@ -24,8 +24,7 @@ $form.MaximizeBox = $true
 $form.FormBorderStyle = [System.Windows.Forms.FormBorderStyle]::Sizable
 $form.Font = New-Object System.Drawing.Font('Segoe UI', 9)
 $form.AutoScaleMode = [System.Windows.Forms.AutoScaleMode]::Dpi
-$form.AutoScroll = $true
-$form.AutoScrollMinSize = $designFormSize
+$form.AutoScroll = $false
 
 $titleLabel = New-Object System.Windows.Forms.Label
 $titleLabel.Text = $script:appDisplayName
