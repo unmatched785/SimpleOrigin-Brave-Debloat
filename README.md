@@ -12,7 +12,6 @@ It gives you:
 
 - one-by-one policy toggles
 - preset-based setup for common configurations
-- a separate **Advanced / High Friction** section for restrictive toggles
 - a `Clear Checks` action to uncheck everything without writing changes
 - screen-aware window sizing with scroll support for smaller laptop displays
 - DNS-over-HTTPS presets
@@ -122,11 +121,9 @@ The Brave policy surface for Shields uses **site lists**, not a true global on/o
 
 A future release may add a **site-specific Shields allow/disable list editor**, but that is separate from a global toggle.
 
-### Advanced / High Friction toggles
+### High-friction toggles
 
-Some policy keys are intentionally separated into an **Advanced / High Friction** section.
-
-These are options that can break expected browser workflows or add stronger restrictions, such as:
+Some policy keys are intentionally kept out of the recommended presets because they can break expected browser workflows or add stronger restrictions, such as:
 
 - disabling Safe Browsing
 - disabling the password manager or autofill
