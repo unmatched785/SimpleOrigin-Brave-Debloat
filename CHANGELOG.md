@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file.
 
+## 0.4.2 - 2026-04-21
+
+### Added
+
+- Added Privacy Guides-aligned hardening toggles for AMP redirects, language fingerprinting reduction, and tracking URL parameter filtering.
+- Added a dedicated **Advanced / High Friction** section for restrictive policy toggles that are useful, but not good defaults for most users.
+
+### Changed
+
+- Switched the default recommendation to `Origin - Recommended` and kept `Origin + Hardening` as a separate privacy-oriented preset.
+- Refined the hardening catalog to stay focused on practical Brave-compatible controls and retired stale or ignored policy toggles.
+
+### Fixed
+
+- Fixed preset labeling and layout flow so the Advanced section sits under Telemetry and Privacy, while older preset names still import cleanly.
+
 ## 0.4.1 - 2026-04-20
 
 ### Fixed
