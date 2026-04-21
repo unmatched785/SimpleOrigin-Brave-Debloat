@@ -28,7 +28,7 @@ function New-SectionPanel {
     return $panel
 }
 
-$leftPanel  = New-SectionPanel -Title 'Telemetry and Privacy' -X 24 -Y 136 -Width 565 -Height 786
+$leftPanel  = New-SectionPanel -Title 'Telemetry and Privacy' -X 24 -Y 136 -Width 565 -Height 620
 $rightPanel = New-SectionPanel -Title 'Brave Features and Performance' -X 607 -Y 136 -Width 565 -Height 786
 
 function Add-FeatureCheckboxes {
@@ -97,7 +97,7 @@ function Add-FeatureCheckboxes {
 Add-FeatureCheckboxes -Panel $leftPanel  -Features ($featureCatalog | Where-Object { $_.Category -in @('Telemetry','Privacy') -and (-not $_.ContainsKey('Advanced') -or -not $_.Advanced) }) -StartY 38 -ShowSubheaders
 Add-FeatureCheckboxes -Panel $rightPanel -Features ($featureCatalog | Where-Object { $_.Category -in @('Brave','Performance') -and (-not $_.ContainsKey('Advanced') -or -not $_.Advanced) }) -StartY 38 -ShowSubheaders
 
-$advancedGroup = New-SectionPanel -Title 'Advanced / High Friction' -X 24 -Y 935 -Width 565 -Height 470
+$advancedGroup = New-SectionPanel -Title 'Advanced / High Friction' -X 24 -Y 769 -Width 565 -Height 636
 
 $advancedHintLabel = New-Object System.Windows.Forms.Label
 $advancedHintLabel.Text = 'These toggles can break expected browser workflows or add strong restrictions. Leave them unchecked unless you want the managed-policy override.'
