@@ -53,6 +53,11 @@ $applyButton.Add_Click({
         Clear-OtherScopeManagedProperty -Key $key -OtherPath $scopeInfo.OtherPath -OtherScopeName $otherScopeName -OtherScopeWarnings $otherScopeWarnings
     }
 
+    foreach ($legacyKey in $legacyManagedPolicyKeys) {
+        [void](Remove-ManagedPropertyFromPath -Key $legacyKey -Path $scopeInfo.TargetPath)
+        Clear-OtherScopeManagedProperty -Key $legacyKey -OtherPath $scopeInfo.OtherPath -OtherScopeName $otherScopeName -OtherScopeWarnings $otherScopeWarnings
+    }
+
     if (-not (Set-DnsSettings -DnsMode ([string]$dnsDropdown.SelectedItem) -DnsTemplates $dnsTemplateBox.Text -TargetPath $scopeInfo.TargetPath -OtherPath $scopeInfo.OtherPath -TargetScopeName $scopeInfo.ScopeName -OtherScopeWarnings $otherScopeWarnings)) {
         Initialize-CurrentSettings
         return

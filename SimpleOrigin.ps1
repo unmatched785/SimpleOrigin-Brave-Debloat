@@ -266,7 +266,6 @@ function Cleanup-PolicyPathTree {
 }
 
 $featureCatalog = @(
-    @{ Id = 'telemetry.metrics';           Name = 'Disable Metrics Reporting';        Key = 'MetricsReportingEnabled';                 Value = 0;                           Type = 'DWord'; Category = 'Telemetry';   Origin = $true  },
     @{ Id = 'telemetry.safebrowsing_rep';  Name = 'Disable Safe Browsing Reporting';  Key = 'SafeBrowsingExtendedReportingEnabled';    Value = 0;                           Type = 'DWord'; Category = 'Telemetry';   Origin = $false },
     @{ Id = 'telemetry.url_data';          Name = 'Disable URL Data Collection';      Key = 'UrlKeyedAnonymizedDataCollectionEnabled'; Value = 0;                           Type = 'DWord'; Category = 'Telemetry';   Origin = $false },
     @{ Id = 'telemetry.feedback';          Name = 'Disable Feedback Surveys';         Key = 'FeedbackSurveysEnabled';                  Value = 0;                           Type = 'DWord'; Category = 'Telemetry';   Origin = $false },
@@ -315,13 +314,16 @@ $featureCatalog = @(
     @{ Id = 'perf.wayback';                Name = 'Disable Wayback Machine';          Key = 'BraveWaybackMachineEnabled';             Value = 0;                           Type = 'DWord'; Category = 'Performance'; Origin = $true  }
 )
 
+$legacyManagedPolicyKeys = @(
+    'MetricsReportingEnabled'
+)
+
 $featureMap = @{}
 foreach ($feature in $featureCatalog) {
     $featureMap[$feature.Id] = $feature
 }
 
 $originPreset = @(
-    'telemetry.metrics',
     'telemetry.p3a',
     'telemetry.stats_ping',
     'brave.rewards',
@@ -338,7 +340,6 @@ $originPreset = @(
 )
 
 $hardeningPreset = @(
-    'telemetry.metrics',
     'telemetry.url_data',
     'telemetry.p3a',
     'telemetry.stats_ping',
@@ -386,6 +387,7 @@ $dohPresets = [ordered]@{
 function Get-ManagedPolicyKeys {
     $keys = @(
         ($featureCatalog | ForEach-Object { $_.Key } | Select-Object -Unique)
+        $legacyManagedPolicyKeys
         'DnsOverHttpsMode'
         'DnsOverHttpsTemplates'
     ) | Select-Object -Unique
@@ -1280,6 +1282,11 @@ $applyButton.Add_Click({
         }
 
         Clear-OtherScopeManagedProperty -Key $key -OtherPath $scopeInfo.OtherPath -OtherScopeName $otherScopeName -OtherScopeWarnings $otherScopeWarnings
+    }
+
+    foreach ($legacyKey in $legacyManagedPolicyKeys) {
+        [void](Remove-ManagedPropertyFromPath -Key $legacyKey -Path $scopeInfo.TargetPath)
+        Clear-OtherScopeManagedProperty -Key $legacyKey -OtherPath $scopeInfo.OtherPath -OtherScopeName $otherScopeName -OtherScopeWarnings $otherScopeWarnings
     }
 
     if (-not (Set-DnsSettings -DnsMode ([string]$dnsDropdown.SelectedItem) -DnsTemplates $dnsTemplateBox.Text -TargetPath $scopeInfo.TargetPath -OtherPath $scopeInfo.OtherPath -TargetScopeName $scopeInfo.ScopeName -OtherScopeWarnings $otherScopeWarnings)) {

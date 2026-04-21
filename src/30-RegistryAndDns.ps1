@@ -1,6 +1,7 @@
 function Get-ManagedPolicyKeys {
     $keys = @(
         ($featureCatalog | ForEach-Object { $_.Key } | Select-Object -Unique)
+        $legacyManagedPolicyKeys
         'DnsOverHttpsMode'
         'DnsOverHttpsTemplates'
     ) | Select-Object -Unique
