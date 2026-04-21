@@ -119,7 +119,7 @@ $form.Controls.Add($scopeHintLabel)
 Register-MutedLabel $scopeHintLabel
 
 $presetDescriptionLabel = New-Object System.Windows.Forms.Label
-$presetDescriptionLabel.Text = [string]$presetDescriptions['Origin']
+$presetDescriptionLabel.Text = [string]$presetDescriptions['Origin - Recommended']
 $presetDescriptionLabel.Location = New-Object System.Drawing.Point(24, 108)
 $presetDescriptionLabel.Size = New-Object System.Drawing.Size(1140, 20)
 $presetDescriptionLabel.AutoEllipsis = $true

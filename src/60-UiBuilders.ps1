@@ -97,7 +97,19 @@ function Add-FeatureCheckboxes {
 Add-FeatureCheckboxes -Panel $leftPanel  -Features ($featureCatalog | Where-Object { $_.Category -in @('Telemetry','Privacy') -and (-not $_.ContainsKey('Advanced') -or -not $_.Advanced) }) -StartY 38 -ShowSubheaders
 Add-FeatureCheckboxes -Panel $rightPanel -Features ($featureCatalog | Where-Object { $_.Category -in @('Brave','Performance') -and (-not $_.ContainsKey('Advanced') -or -not $_.Advanced) }) -StartY 38 -ShowSubheaders
 
-$dnsGroup = New-SectionPanel -Title 'DNS Over HTTPS' -X 24 -Y 935 -Width 1148 -Height 120
+$advancedGroup = New-SectionPanel -Title 'Advanced / High Friction' -X 24 -Y 935 -Width 565 -Height 290
+
+$advancedHintLabel = New-Object System.Windows.Forms.Label
+$advancedHintLabel.Text = 'These toggles can break expected browser workflows or add strong restrictions. Leave them unchecked unless you want the managed-policy override.'
+$advancedHintLabel.Location = New-Object System.Drawing.Point(20, 40)
+$advancedHintLabel.Size = New-Object System.Drawing.Size(510, 34)
+$advancedHintLabel.AutoEllipsis = $true
+$advancedGroup.Controls.Add($advancedHintLabel)
+Register-MutedLabel $advancedHintLabel
+
+Add-FeatureCheckboxes -Panel $advancedGroup -Features ($featureCatalog | Where-Object { $_.ContainsKey('Advanced') -and $_.Advanced }) -StartY 78 -ShowSubheaders
+
+$dnsGroup = New-SectionPanel -Title 'DNS Over HTTPS' -X 607 -Y 935 -Width 565 -Height 170
 
 $dnsPresetLabel = New-Object System.Windows.Forms.Label
 $dnsPresetLabel.Text = 'Preset:'
@@ -108,7 +120,7 @@ Register-ThemedControl $dnsPresetLabel
 
 $dnsPresetDropdown = New-Object System.Windows.Forms.ComboBox
 $dnsPresetDropdown.Location = New-Object System.Drawing.Point(72, 40)
-$dnsPresetDropdown.Size = New-Object System.Drawing.Size(280, 28)
+$dnsPresetDropdown.Size = New-Object System.Drawing.Size(220, 28)
 $dnsPresetDropdown.DropDownStyle = [System.Windows.Forms.ComboBoxStyle]::DropDownList
 $dnsPresetDropdown.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
 $dnsPresetDropdown.Items.AddRange([string[]]$dohPresets.Keys)
@@ -118,13 +130,13 @@ Register-ThemedControl $dnsPresetDropdown
 
 $dnsModeLabel = New-Object System.Windows.Forms.Label
 $dnsModeLabel.Text = 'Mode:'
-$dnsModeLabel.Location = New-Object System.Drawing.Point(372, 42)
+$dnsModeLabel.Location = New-Object System.Drawing.Point(310, 42)
 $dnsModeLabel.Size = New-Object System.Drawing.Size(45, 22)
 $dnsGroup.Controls.Add($dnsModeLabel)
 Register-ThemedControl $dnsModeLabel
 
 $dnsDropdown = New-Object System.Windows.Forms.ComboBox
-$dnsDropdown.Location = New-Object System.Drawing.Point(420, 40)
+$dnsDropdown.Location = New-Object System.Drawing.Point(358, 40)
 $dnsDropdown.Size = New-Object System.Drawing.Size(170, 28)
 $dnsDropdown.DropDownStyle = [System.Windows.Forms.ComboBoxStyle]::DropDownList
 $dnsDropdown.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
@@ -135,35 +147,25 @@ Register-ThemedControl $dnsDropdown
 
 $dnsTemplateLabel = New-Object System.Windows.Forms.Label
 $dnsTemplateLabel.Text = 'Template URL:'
-$dnsTemplateLabel.Location = New-Object System.Drawing.Point(610, 42)
+$dnsTemplateLabel.Location = New-Object System.Drawing.Point(20, 82)
 $dnsTemplateLabel.Size = New-Object System.Drawing.Size(98, 22)
 $dnsGroup.Controls.Add($dnsTemplateLabel)
 Register-ThemedControl $dnsTemplateLabel
 
 $dnsTemplateBox = New-Object System.Windows.Forms.TextBox
-$dnsTemplateBox.Location = New-Object System.Drawing.Point(714, 40)
-$dnsTemplateBox.Size = New-Object System.Drawing.Size(394, 27)
+$dnsTemplateBox.Location = New-Object System.Drawing.Point(122, 80)
+$dnsTemplateBox.Size = New-Object System.Drawing.Size(406, 27)
 $dnsTemplateBox.Enabled = $false
 $dnsGroup.Controls.Add($dnsTemplateBox)
 Register-ThemedControl $dnsTemplateBox
 
 $dnsHintLabel = New-Object System.Windows.Forms.Label
 $dnsHintLabel.Text = 'Browser default (unset) removes DoH policy. Selecting a preset fills the template and switches Mode to custom in the UI.'
-$dnsHintLabel.Location = New-Object System.Drawing.Point(20, 76)
-$dnsHintLabel.Size = New-Object System.Drawing.Size(700, 18)
+$dnsHintLabel.Location = New-Object System.Drawing.Point(20, 118)
+$dnsHintLabel.Size = New-Object System.Drawing.Size(510, 34)
+$dnsHintLabel.AutoEllipsis = $true
 $dnsGroup.Controls.Add($dnsHintLabel)
 Register-MutedLabel $dnsHintLabel
-
-$advancedGroup = New-SectionPanel -Title 'Advanced / High Friction' -X 24 -Y 1066 -Width 1148 -Height 160
-
-$advancedHintLabel = New-Object System.Windows.Forms.Label
-$advancedHintLabel.Text = 'These toggles can break expected browser workflows or add strong restrictions. Leave them unchecked unless you know you want the managed-policy override.'
-$advancedHintLabel.Location = New-Object System.Drawing.Point(20, 40)
-$advancedHintLabel.Size = New-Object System.Drawing.Size(1080, 18)
-$advancedGroup.Controls.Add($advancedHintLabel)
-Register-MutedLabel $advancedHintLabel
-
-Add-FeatureCheckboxes -Panel $advancedGroup -Features ($featureCatalog | Where-Object { $_.ContainsKey('Advanced') -and $_.Advanced }) -StartY 66 -ShowSubheaders
 
 $exportButton = New-Object System.Windows.Forms.Button
 $exportButton.Text = 'Export'

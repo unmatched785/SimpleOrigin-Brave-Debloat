@@ -58,7 +58,7 @@ Simple Origin - Brave Debloat is **not** that product. This repo exists for user
 
 ## Included presets
 
-### Origin
+### Origin - Recommended
 
 The recommended preset for most users.
 
