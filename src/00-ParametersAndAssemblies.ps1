@@ -46,6 +46,7 @@ if (-not $Bootstrap -and [string]::IsNullOrWhiteSpace($MyInvocation.MyCommand.Pa
     if (Invoke-SimpleOriginBootstrap -NoAdminRelaunch:$NoAdminRelaunch) {
         return
     }
+    return
 }
 
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8

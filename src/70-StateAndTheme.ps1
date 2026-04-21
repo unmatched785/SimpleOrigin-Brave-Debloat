@@ -248,14 +248,11 @@ function Initialize-CurrentSettings {
     }
 
     $matchingPreset = Get-MatchingPresetName
-    if ((Get-CurrentFeatureIdSet).Count -eq 0) {
-        $presetDropdown.SelectedItem = 'Origin + Hardening - Recommended'
-    }
-    elseif ($presetDropdown.Items.Contains($matchingPreset)) {
+    if ($presetDropdown.Items.Contains($matchingPreset)) {
         $presetDropdown.SelectedItem = $matchingPreset
     }
     else {
-        $presetDropdown.SelectedItem = 'Origin + Hardening - Recommended'
+        $presetDropdown.SelectedItem = 'Custom'
     }
 
     Update-PresetDescription

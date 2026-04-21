@@ -46,6 +46,7 @@ if (-not $Bootstrap -and [string]::IsNullOrWhiteSpace($MyInvocation.MyCommand.Pa
     if (Invoke-SimpleOriginBootstrap -NoAdminRelaunch:$NoAdminRelaunch) {
         return
     }
+    return
 }
 
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
@@ -1196,14 +1197,11 @@ function Initialize-CurrentSettings {
     }
 
     $matchingPreset = Get-MatchingPresetName
-    if ((Get-CurrentFeatureIdSet).Count -eq 0) {
-        $presetDropdown.SelectedItem = 'Origin + Hardening - Recommended'
-    }
-    elseif ($presetDropdown.Items.Contains($matchingPreset)) {
+    if ($presetDropdown.Items.Contains($matchingPreset)) {
         $presetDropdown.SelectedItem = $matchingPreset
     }
     else {
-        $presetDropdown.SelectedItem = 'Origin + Hardening - Recommended'
+        $presetDropdown.SelectedItem = 'Custom'
     }
 
     Update-PresetDescription

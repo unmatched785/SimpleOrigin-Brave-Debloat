@@ -59,7 +59,7 @@ Simple Origin - Brave Debloat is **not** that product. This repo exists for user
 
 ### Origin + Hardening - Recommended
 
-The default preset. It combines Origin-like Brave feature reduction with practical privacy hardening.
+The recommended preset to load first. It combines Origin-like Brave feature reduction with practical privacy hardening.
 
 ### Origin
 
