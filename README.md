@@ -12,6 +12,7 @@ It gives you:
 
 - one-by-one policy toggles
 - preset-based setup for common configurations
+- a separate **Advanced / High Friction** section for restrictive toggles
 - a `Clear Checks` action to uncheck everything without writing changes
 - screen-aware window sizing with scroll support for smaller laptop displays
 - DNS-over-HTTPS presets
@@ -57,13 +58,15 @@ Simple Origin - Brave Debloat is **not** that product. This repo exists for user
 
 ## Included presets
 
-### Origin + Hardening - Recommended
-
-The recommended preset to load first. It combines Origin-like Brave feature reduction with practical privacy hardening.
-
 ### Origin
 
-The closest preset to **Brave Origin-like behavior** using managed policies.
+The recommended preset for most users.
+
+It gives you the closest **Brave Origin-like debloat** behavior available through managed policies on regular Brave.
+
+### Origin + Hardening
+
+A privacy-oriented preset that combines Origin-like debloating with practical privacy hardening.
 
 ### Hardening
 
@@ -118,6 +121,20 @@ This project intentionally **does not** expose a fake global **Disable Brave Shi
 The Brave policy surface for Shields uses **site lists**, not a true global on/off policy.
 
 A future release may add a **site-specific Shields allow/disable list editor**, but that is separate from a global toggle.
+
+### Advanced / High Friction toggles
+
+Some policy keys are intentionally separated into an **Advanced / High Friction** section.
+
+These are options that can break expected browser workflows or add stronger restrictions, such as:
+
+- disabling Safe Browsing
+- disabling the password manager or autofill
+- disabling browser sign-in or sync
+- forcing or disabling Incognito mode
+- disabling printing or developer tools
+
+They are still available for `Custom` setups, but they are kept out of the default recommendations.
 
 ## Compatibility
 

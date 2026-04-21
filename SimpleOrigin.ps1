@@ -272,11 +272,11 @@ $featureCatalog = @(
     @{ Id = 'telemetry.p3a';               Name = 'Disable P3A Analytics';            Key = 'BraveP3AEnabled';                        Value = 0;                           Type = 'DWord'; Category = 'Telemetry';   Origin = $true  },
     @{ Id = 'telemetry.stats_ping';        Name = 'Disable Stats Ping';               Key = 'BraveStatsPingEnabled';                  Value = 0;                           Type = 'DWord'; Category = 'Telemetry';   Origin = $true  },
 
-    @{ Id = 'privacy.safe_browsing';       Name = 'Disable Safe Browsing';            Key = 'SafeBrowsingProtectionLevel';            Value = 0;                           Type = 'DWord'; Category = 'Privacy';     Origin = $false },
-    @{ Id = 'privacy.autofill_addr';       Name = 'Disable Autofill (Addresses)';     Key = 'AutofillAddressEnabled';                 Value = 0;                           Type = 'DWord'; Category = 'Privacy';     Origin = $false },
-    @{ Id = 'privacy.autofill_cards';      Name = 'Disable Autofill (Credit Cards)';  Key = 'AutofillCreditCardEnabled';              Value = 0;                           Type = 'DWord'; Category = 'Privacy';     Origin = $false },
-    @{ Id = 'privacy.password_manager';    Name = 'Disable Password Manager';         Key = 'PasswordManagerEnabled';                 Value = 0;                           Type = 'DWord'; Category = 'Privacy';     Origin = $false },
-    @{ Id = 'privacy.browser_signin';      Name = 'Disable Browser Sign-in';          Key = 'BrowserSignin';                          Value = 0;                           Type = 'DWord'; Category = 'Privacy';     Origin = $false },
+    @{ Id = 'privacy.safe_browsing';       Name = 'Disable Safe Browsing';            Key = 'SafeBrowsingProtectionLevel';            Value = 0;                           Type = 'DWord'; Category = 'Privacy';     Origin = $false; Advanced = $true  },
+    @{ Id = 'privacy.autofill_addr';       Name = 'Disable Autofill (Addresses)';     Key = 'AutofillAddressEnabled';                 Value = 0;                           Type = 'DWord'; Category = 'Privacy';     Origin = $false; Advanced = $true  },
+    @{ Id = 'privacy.autofill_cards';      Name = 'Disable Autofill (Credit Cards)';  Key = 'AutofillCreditCardEnabled';              Value = 0;                           Type = 'DWord'; Category = 'Privacy';     Origin = $false; Advanced = $true  },
+    @{ Id = 'privacy.password_manager';    Name = 'Disable Password Manager';         Key = 'PasswordManagerEnabled';                 Value = 0;                           Type = 'DWord'; Category = 'Privacy';     Origin = $false; Advanced = $true  },
+    @{ Id = 'privacy.browser_signin';      Name = 'Disable Browser Sign-in';          Key = 'BrowserSignin';                          Value = 0;                           Type = 'DWord'; Category = 'Privacy';     Origin = $false; Advanced = $true  },
     @{ Id = 'privacy.gpc';                 Name = 'Enable Global Privacy Control';    Key = 'BraveGlobalPrivacyControlEnabled';       Value = 1;                           Type = 'DWord'; Category = 'Privacy';     Origin = $false },
     @{ Id = 'privacy.deamp';               Name = 'Auto-Redirect AMP Pages';          Key = 'BraveDeAmpEnabled';                      Value = 1;                           Type = 'DWord'; Category = 'Privacy';     Origin = $false },
     @{ Id = 'privacy.language_fp';         Name = 'Reduce Language Fingerprinting';   Key = 'BraveReduceLanguageEnabled';             Value = 1;                           Type = 'DWord'; Category = 'Privacy';     Origin = $false },
@@ -284,9 +284,9 @@ $featureCatalog = @(
     @{ Id = 'privacy.quic';                Name = 'Disable QUIC Protocol';            Key = 'QuicAllowed';                            Value = 0;                           Type = 'DWord'; Category = 'Privacy';     Origin = $false },
     @{ Id = 'privacy.third_party_cookies'; Name = 'Block Third Party Cookies';        Key = 'BlockThirdPartyCookies';                 Value = 1;                           Type = 'DWord'; Category = 'Privacy';     Origin = $false },
     @{ Id = 'privacy.tracking_params';     Name = 'Filter Tracking URL Parameters';   Key = 'BraveTrackingQueryParametersFilteringEnabled'; Value = 1;                    Type = 'DWord'; Category = 'Privacy';     Origin = $false },
-    @{ Id = 'privacy.safe_search';         Name = 'Force Google SafeSearch';          Key = 'ForceGoogleSafeSearch';                  Value = 1;                           Type = 'DWord'; Category = 'Privacy';     Origin = $false },
-    @{ Id = 'privacy.disable_incognito';   Name = 'Disable Incognito Mode';           Key = 'IncognitoModeAvailability';              Value = 1;                           Type = 'DWord'; Category = 'Privacy';     Origin = $false; ExclusiveGroup = 'incognito_mode' },
-    @{ Id = 'privacy.force_incognito';     Name = 'Force Incognito Mode';             Key = 'IncognitoModeAvailability';              Value = 2;                           Type = 'DWord'; Category = 'Privacy';     Origin = $false; ExclusiveGroup = 'incognito_mode' },
+    @{ Id = 'privacy.safe_search';         Name = 'Force Google SafeSearch';          Key = 'ForceGoogleSafeSearch';                  Value = 1;                           Type = 'DWord'; Category = 'Privacy';     Origin = $false; Advanced = $true  },
+    @{ Id = 'privacy.disable_incognito';   Name = 'Disable Incognito Mode';           Key = 'IncognitoModeAvailability';              Value = 1;                           Type = 'DWord'; Category = 'Privacy';     Origin = $false; Advanced = $true; ExclusiveGroup = 'incognito_mode' },
+    @{ Id = 'privacy.force_incognito';     Name = 'Force Incognito Mode';             Key = 'IncognitoModeAvailability';              Value = 2;                           Type = 'DWord'; Category = 'Privacy';     Origin = $false; Advanced = $true; ExclusiveGroup = 'incognito_mode' },
 
     @{ Id = 'brave.rewards';               Name = 'Disable Brave Rewards';            Key = 'BraveRewardsDisabled';                   Value = 1;                           Type = 'DWord'; Category = 'Brave';       Origin = $true  },
     @{ Id = 'brave.wallet';                Name = 'Disable Brave Wallet';             Key = 'BraveWalletDisabled';                    Value = 1;                           Type = 'DWord'; Category = 'Brave';       Origin = $true  },
@@ -298,7 +298,7 @@ $featureCatalog = @(
     @{ Id = 'brave.web_discovery';         Name = 'Disable Web Discovery';            Key = 'BraveWebDiscoveryEnabled';               Value = 0;                           Type = 'DWord'; Category = 'Brave';       Origin = $true  },
     @{ Id = 'brave.speedreader';           Name = 'Disable Speedreader';              Key = 'BraveSpeedreaderEnabled';                Value = 0;                           Type = 'DWord'; Category = 'Brave';       Origin = $true  },
     @{ Id = 'brave.tor';                   Name = 'Disable Tor';                      Key = 'TorDisabled';                            Value = 1;                           Type = 'DWord'; Category = 'Brave';       Origin = $true  },
-    @{ Id = 'brave.sync';                  Name = 'Disable Sync';                     Key = 'SyncDisabled';                           Value = 1;                           Type = 'DWord'; Category = 'Brave';       Origin = $false },
+    @{ Id = 'brave.sync';                  Name = 'Disable Sync';                     Key = 'SyncDisabled';                           Value = 1;                           Type = 'DWord'; Category = 'Brave';       Origin = $false; Advanced = $true  },
 
     @{ Id = 'perf.background';             Name = 'Disable Background Mode';          Key = 'BackgroundModeEnabled';                  Value = 0;                           Type = 'DWord'; Category = 'Performance'; Origin = $false },
     @{ Id = 'perf.media_recs';             Name = 'Disable Media Recommendations';    Key = 'MediaRecommendationsEnabled';            Value = 0;                           Type = 'DWord'; Category = 'Performance'; Origin = $false },
@@ -308,9 +308,9 @@ $featureCatalog = @(
     @{ Id = 'perf.spellcheck';             Name = 'Disable Spellcheck';               Key = 'SpellcheckEnabled';                      Value = 0;                           Type = 'DWord'; Category = 'Performance'; Origin = $false },
     @{ Id = 'perf.promotions';             Name = 'Disable Promotions';               Key = 'PromotionsEnabled';                      Value = 0;                           Type = 'DWord'; Category = 'Performance'; Origin = $false },
     @{ Id = 'perf.search_suggest';         Name = 'Disable Search Suggestions';       Key = 'SearchSuggestEnabled';                   Value = 0;                           Type = 'DWord'; Category = 'Performance'; Origin = $false },
-    @{ Id = 'perf.printing';               Name = 'Disable Printing';                 Key = 'PrintingEnabled';                        Value = 0;                           Type = 'DWord'; Category = 'Performance'; Origin = $false },
+    @{ Id = 'perf.printing';               Name = 'Disable Printing';                 Key = 'PrintingEnabled';                        Value = 0;                           Type = 'DWord'; Category = 'Performance'; Origin = $false; Advanced = $true  },
     @{ Id = 'perf.default_browser';        Name = 'Disable Default Browser Prompt';   Key = 'DefaultBrowserSettingEnabled';           Value = 0;                           Type = 'DWord'; Category = 'Performance'; Origin = $false },
-    @{ Id = 'perf.devtools';               Name = 'Disable Developer Tools';          Key = 'DeveloperToolsAvailability';             Value = 2;                           Type = 'DWord'; Category = 'Performance'; Origin = $false },
+    @{ Id = 'perf.devtools';               Name = 'Disable Developer Tools';          Key = 'DeveloperToolsAvailability';             Value = 2;                           Type = 'DWord'; Category = 'Performance'; Origin = $false; Advanced = $true  },
     @{ Id = 'perf.wayback';                Name = 'Disable Wayback Machine';          Key = 'BraveWaybackMachineEnabled';             Value = 0;                           Type = 'DWord'; Category = 'Performance'; Origin = $true  }
 )
 
@@ -360,17 +360,21 @@ $hardeningPreset = @(
 $originAndHardeningPreset = @($originPreset + $hardeningPreset | Select-Object -Unique)
 
 $presets = [ordered]@{
-    'Origin + Hardening - Recommended' = $originAndHardeningPreset
-    'Origin'                           = $originPreset
-    'Hardening'                        = $hardeningPreset
-    'Custom'                           = @()
+    'Origin'              = $originPreset
+    'Origin + Hardening'  = $originAndHardeningPreset
+    'Hardening'           = $hardeningPreset
+    'Custom'              = @()
 }
 
 $presetDescriptions = [ordered]@{
-    'Origin + Hardening - Recommended' = 'Recommended preset: Origin-like debloating plus practical privacy hardening.'
-    'Origin'                           = 'Closest to Brave Origin upgrade-like behavior using managed policies.'
-    'Hardening'                        = 'Practical privacy hardening preset for regular Brave without high-friction lock-down policies.'
-    'Custom'                           = 'Manual selection. Choose each policy toggle yourself.'
+    'Origin'              = 'Recommended preset for most users: Origin-like debloating for regular Brave with low setup risk.'
+    'Origin + Hardening'  = 'Privacy-oriented preset: Origin-like debloating plus practical privacy hardening.'
+    'Hardening'           = 'Practical privacy hardening preset for regular Brave without high-friction lock-down policies.'
+    'Custom'              = 'Manual selection. Choose each policy toggle yourself.'
+}
+
+$presetAliases = @{
+    'Origin + Hardening - Recommended' = 'Origin + Hardening'
 }
 
 $dohPresets = [ordered]@{
@@ -624,7 +628,7 @@ function Register-MutedLabel {
 }
 
 $form = New-Object System.Windows.Forms.Form
-$designFormSize = New-Object System.Drawing.Size(1220, 1175)
+$designFormSize = New-Object System.Drawing.Size(1220, 1360)
 $minimumFormSize = New-Object System.Drawing.Size(780, 600)
 $initialFormWidth = $designFormSize.Width
 $initialFormHeight = $designFormSize.Height
@@ -663,7 +667,7 @@ $form.Controls.Add($titleLabel)
 Register-ThemedControl $titleLabel
 
 $subLabel = New-Object System.Windows.Forms.Label
-$subLabel.Text = 'Managed-policy UI for Brave. Includes Origin, Hardening, and Origin + Hardening presets. Scope-aware apply; no binary patching.'
+$subLabel.Text = 'Managed-policy UI for Brave. Includes Origin, Hardening, Origin + Hardening, and a separate Advanced section for high-friction toggles.'
 $subLabel.Location = New-Object System.Drawing.Point(24, 46)
 $subLabel.Size = New-Object System.Drawing.Size(1015, 20)
 $subLabel.AutoEllipsis = $true
@@ -744,7 +748,7 @@ $form.Controls.Add($scopeHintLabel)
 Register-MutedLabel $scopeHintLabel
 
 $presetDescriptionLabel = New-Object System.Windows.Forms.Label
-$presetDescriptionLabel.Text = [string]$presetDescriptions['Origin + Hardening - Recommended']
+$presetDescriptionLabel.Text = [string]$presetDescriptions['Origin']
 $presetDescriptionLabel.Location = New-Object System.Drawing.Point(24, 108)
 $presetDescriptionLabel.Size = New-Object System.Drawing.Size(1140, 20)
 $presetDescriptionLabel.AutoEllipsis = $true
@@ -851,8 +855,8 @@ function Add-FeatureCheckboxes {
     }
 }
 
-Add-FeatureCheckboxes -Panel $leftPanel  -Features ($featureCatalog | Where-Object { $_.Category -in @('Telemetry','Privacy') }) -StartY 38 -ShowSubheaders
-Add-FeatureCheckboxes -Panel $rightPanel -Features ($featureCatalog | Where-Object { $_.Category -in @('Brave','Performance') }) -StartY 38 -ShowSubheaders
+Add-FeatureCheckboxes -Panel $leftPanel  -Features ($featureCatalog | Where-Object { $_.Category -in @('Telemetry','Privacy') -and (-not $_.ContainsKey('Advanced') -or -not $_.Advanced) }) -StartY 38 -ShowSubheaders
+Add-FeatureCheckboxes -Panel $rightPanel -Features ($featureCatalog | Where-Object { $_.Category -in @('Brave','Performance') -and (-not $_.ContainsKey('Advanced') -or -not $_.Advanced) }) -StartY 38 -ShowSubheaders
 
 $dnsGroup = New-SectionPanel -Title 'DNS Over HTTPS' -X 24 -Y 935 -Width 1148 -Height 120
 
@@ -911,9 +915,20 @@ $dnsHintLabel.Size = New-Object System.Drawing.Size(700, 18)
 $dnsGroup.Controls.Add($dnsHintLabel)
 Register-MutedLabel $dnsHintLabel
 
+$advancedGroup = New-SectionPanel -Title 'Advanced / High Friction' -X 24 -Y 1066 -Width 1148 -Height 160
+
+$advancedHintLabel = New-Object System.Windows.Forms.Label
+$advancedHintLabel.Text = 'These toggles can break expected browser workflows or add strong restrictions. Leave them unchecked unless you know you want the managed-policy override.'
+$advancedHintLabel.Location = New-Object System.Drawing.Point(20, 40)
+$advancedHintLabel.Size = New-Object System.Drawing.Size(1080, 18)
+$advancedGroup.Controls.Add($advancedHintLabel)
+Register-MutedLabel $advancedHintLabel
+
+Add-FeatureCheckboxes -Panel $advancedGroup -Features ($featureCatalog | Where-Object { $_.ContainsKey('Advanced') -and $_.Advanced }) -StartY 66 -ShowSubheaders
+
 $exportButton = New-Object System.Windows.Forms.Button
 $exportButton.Text = 'Export'
-$exportButton.Location = New-Object System.Drawing.Point(24, 1066)
+$exportButton.Location = New-Object System.Drawing.Point(24, 1242)
 $exportButton.Size = New-Object System.Drawing.Size(112, 32)
 $exportButton.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
 $form.Controls.Add($exportButton)
@@ -922,7 +937,7 @@ $script:actionButtons['export'] = $exportButton
 
 $importButton = New-Object System.Windows.Forms.Button
 $importButton.Text = 'Import'
-$importButton.Location = New-Object System.Drawing.Point(148, 1066)
+$importButton.Location = New-Object System.Drawing.Point(148, 1242)
 $importButton.Size = New-Object System.Drawing.Size(112, 32)
 $importButton.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
 $form.Controls.Add($importButton)
@@ -931,7 +946,7 @@ $script:actionButtons['import'] = $importButton
 
 $applyButton = New-Object System.Windows.Forms.Button
 $applyButton.Text = 'Apply'
-$applyButton.Location = New-Object System.Drawing.Point(936, 1066)
+$applyButton.Location = New-Object System.Drawing.Point(936, 1242)
 $applyButton.Size = New-Object System.Drawing.Size(112, 32)
 $applyButton.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
 $form.Controls.Add($applyButton)
@@ -940,7 +955,7 @@ $script:actionButtons['apply'] = $applyButton
 
 $resetButton = New-Object System.Windows.Forms.Button
 $resetButton.Text = 'Reset Managed`nPolicies'
-$resetButton.Location = New-Object System.Drawing.Point(1060, 1066)
+$resetButton.Location = New-Object System.Drawing.Point(1060, 1242)
 $resetButton.Size = New-Object System.Drawing.Size(112, 40)
 $resetButton.FlatStyle = [System.Windows.Forms.FlatStyle]::Flat
 $form.Controls.Add($resetButton)
@@ -949,7 +964,7 @@ $script:actionButtons['reset'] = $resetButton
 
 $statusLabel = New-Object System.Windows.Forms.Label
 $statusLabel.Text = 'Ready. Scope-aware apply is enabled.'
-$statusLabel.Location = New-Object System.Drawing.Point(290, 1072)
+$statusLabel.Location = New-Object System.Drawing.Point(290, 1248)
 $statusLabel.Size = New-Object System.Drawing.Size(620, 20)
 $statusLabel.AutoEllipsis = $true
 $statusLabel.UseMnemonic = $false
@@ -1435,8 +1450,13 @@ $importButton.Add_Click({
             $dnsPresetDropdown.SelectedItem = Detect-DnsPresetName -Template $dnsTemplateBox.Text
         }
 
-        if ($payload.PSObject.Properties.Name -contains 'Preset' -and $payload.Preset -and $presetDropdown.Items.Contains([string]$payload.Preset)) {
-            $presetDropdown.SelectedItem = [string]$payload.Preset
+        $importPreset = if ($payload.PSObject.Properties.Name -contains 'Preset' -and $payload.Preset) { [string]$payload.Preset } else { '' }
+        if ($presetAliases.ContainsKey($importPreset)) {
+            $importPreset = [string]$presetAliases[$importPreset]
+        }
+
+        if (-not [string]::IsNullOrWhiteSpace($importPreset) -and $presetDropdown.Items.Contains($importPreset)) {
+            $presetDropdown.SelectedItem = $importPreset
         }
         else {
             $presetDropdown.SelectedItem = Get-MatchingPresetName

@@ -1,5 +1,5 @@
 $form = New-Object System.Windows.Forms.Form
-$designFormSize = New-Object System.Drawing.Size(1220, 1175)
+$designFormSize = New-Object System.Drawing.Size(1220, 1360)
 $minimumFormSize = New-Object System.Drawing.Size(780, 600)
 $initialFormWidth = $designFormSize.Width
 $initialFormHeight = $designFormSize.Height
@@ -38,7 +38,7 @@ $form.Controls.Add($titleLabel)
 Register-ThemedControl $titleLabel
 
 $subLabel = New-Object System.Windows.Forms.Label
-$subLabel.Text = 'Managed-policy UI for Brave. Includes Origin, Hardening, and Origin + Hardening presets. Scope-aware apply; no binary patching.'
+$subLabel.Text = 'Managed-policy UI for Brave. Includes Origin, Hardening, Origin + Hardening, and a separate Advanced section for high-friction toggles.'
 $subLabel.Location = New-Object System.Drawing.Point(24, 46)
 $subLabel.Size = New-Object System.Drawing.Size(1015, 20)
 $subLabel.AutoEllipsis = $true
@@ -119,7 +119,7 @@ $form.Controls.Add($scopeHintLabel)
 Register-MutedLabel $scopeHintLabel
 
 $presetDescriptionLabel = New-Object System.Windows.Forms.Label
-$presetDescriptionLabel.Text = [string]$presetDescriptions['Origin + Hardening - Recommended']
+$presetDescriptionLabel.Text = [string]$presetDescriptions['Origin']
 $presetDescriptionLabel.Location = New-Object System.Drawing.Point(24, 108)
 $presetDescriptionLabel.Size = New-Object System.Drawing.Size(1140, 20)
 $presetDescriptionLabel.AutoEllipsis = $true

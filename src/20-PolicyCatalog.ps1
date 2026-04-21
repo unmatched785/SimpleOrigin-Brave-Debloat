@@ -5,11 +5,11 @@ $featureCatalog = @(
     @{ Id = 'telemetry.p3a';               Name = 'Disable P3A Analytics';            Key = 'BraveP3AEnabled';                        Value = 0;                           Type = 'DWord'; Category = 'Telemetry';   Origin = $true  },
     @{ Id = 'telemetry.stats_ping';        Name = 'Disable Stats Ping';               Key = 'BraveStatsPingEnabled';                  Value = 0;                           Type = 'DWord'; Category = 'Telemetry';   Origin = $true  },
 
-    @{ Id = 'privacy.safe_browsing';       Name = 'Disable Safe Browsing';            Key = 'SafeBrowsingProtectionLevel';            Value = 0;                           Type = 'DWord'; Category = 'Privacy';     Origin = $false },
-    @{ Id = 'privacy.autofill_addr';       Name = 'Disable Autofill (Addresses)';     Key = 'AutofillAddressEnabled';                 Value = 0;                           Type = 'DWord'; Category = 'Privacy';     Origin = $false },
-    @{ Id = 'privacy.autofill_cards';      Name = 'Disable Autofill (Credit Cards)';  Key = 'AutofillCreditCardEnabled';              Value = 0;                           Type = 'DWord'; Category = 'Privacy';     Origin = $false },
-    @{ Id = 'privacy.password_manager';    Name = 'Disable Password Manager';         Key = 'PasswordManagerEnabled';                 Value = 0;                           Type = 'DWord'; Category = 'Privacy';     Origin = $false },
-    @{ Id = 'privacy.browser_signin';      Name = 'Disable Browser Sign-in';          Key = 'BrowserSignin';                          Value = 0;                           Type = 'DWord'; Category = 'Privacy';     Origin = $false },
+    @{ Id = 'privacy.safe_browsing';       Name = 'Disable Safe Browsing';            Key = 'SafeBrowsingProtectionLevel';            Value = 0;                           Type = 'DWord'; Category = 'Privacy';     Origin = $false; Advanced = $true  },
+    @{ Id = 'privacy.autofill_addr';       Name = 'Disable Autofill (Addresses)';     Key = 'AutofillAddressEnabled';                 Value = 0;                           Type = 'DWord'; Category = 'Privacy';     Origin = $false; Advanced = $true  },
+    @{ Id = 'privacy.autofill_cards';      Name = 'Disable Autofill (Credit Cards)';  Key = 'AutofillCreditCardEnabled';              Value = 0;                           Type = 'DWord'; Category = 'Privacy';     Origin = $false; Advanced = $true  },
+    @{ Id = 'privacy.password_manager';    Name = 'Disable Password Manager';         Key = 'PasswordManagerEnabled';                 Value = 0;                           Type = 'DWord'; Category = 'Privacy';     Origin = $false; Advanced = $true  },
+    @{ Id = 'privacy.browser_signin';      Name = 'Disable Browser Sign-in';          Key = 'BrowserSignin';                          Value = 0;                           Type = 'DWord'; Category = 'Privacy';     Origin = $false; Advanced = $true  },
     @{ Id = 'privacy.gpc';                 Name = 'Enable Global Privacy Control';    Key = 'BraveGlobalPrivacyControlEnabled';       Value = 1;                           Type = 'DWord'; Category = 'Privacy';     Origin = $false },
     @{ Id = 'privacy.deamp';               Name = 'Auto-Redirect AMP Pages';          Key = 'BraveDeAmpEnabled';                      Value = 1;                           Type = 'DWord'; Category = 'Privacy';     Origin = $false },
     @{ Id = 'privacy.language_fp';         Name = 'Reduce Language Fingerprinting';   Key = 'BraveReduceLanguageEnabled';             Value = 1;                           Type = 'DWord'; Category = 'Privacy';     Origin = $false },
@@ -17,9 +17,9 @@ $featureCatalog = @(
     @{ Id = 'privacy.quic';                Name = 'Disable QUIC Protocol';            Key = 'QuicAllowed';                            Value = 0;                           Type = 'DWord'; Category = 'Privacy';     Origin = $false },
     @{ Id = 'privacy.third_party_cookies'; Name = 'Block Third Party Cookies';        Key = 'BlockThirdPartyCookies';                 Value = 1;                           Type = 'DWord'; Category = 'Privacy';     Origin = $false },
     @{ Id = 'privacy.tracking_params';     Name = 'Filter Tracking URL Parameters';   Key = 'BraveTrackingQueryParametersFilteringEnabled'; Value = 1;                    Type = 'DWord'; Category = 'Privacy';     Origin = $false },
-    @{ Id = 'privacy.safe_search';         Name = 'Force Google SafeSearch';          Key = 'ForceGoogleSafeSearch';                  Value = 1;                           Type = 'DWord'; Category = 'Privacy';     Origin = $false },
-    @{ Id = 'privacy.disable_incognito';   Name = 'Disable Incognito Mode';           Key = 'IncognitoModeAvailability';              Value = 1;                           Type = 'DWord'; Category = 'Privacy';     Origin = $false; ExclusiveGroup = 'incognito_mode' },
-    @{ Id = 'privacy.force_incognito';     Name = 'Force Incognito Mode';             Key = 'IncognitoModeAvailability';              Value = 2;                           Type = 'DWord'; Category = 'Privacy';     Origin = $false; ExclusiveGroup = 'incognito_mode' },
+    @{ Id = 'privacy.safe_search';         Name = 'Force Google SafeSearch';          Key = 'ForceGoogleSafeSearch';                  Value = 1;                           Type = 'DWord'; Category = 'Privacy';     Origin = $false; Advanced = $true  },
+    @{ Id = 'privacy.disable_incognito';   Name = 'Disable Incognito Mode';           Key = 'IncognitoModeAvailability';              Value = 1;                           Type = 'DWord'; Category = 'Privacy';     Origin = $false; Advanced = $true; ExclusiveGroup = 'incognito_mode' },
+    @{ Id = 'privacy.force_incognito';     Name = 'Force Incognito Mode';             Key = 'IncognitoModeAvailability';              Value = 2;                           Type = 'DWord'; Category = 'Privacy';     Origin = $false; Advanced = $true; ExclusiveGroup = 'incognito_mode' },
 
     @{ Id = 'brave.rewards';               Name = 'Disable Brave Rewards';            Key = 'BraveRewardsDisabled';                   Value = 1;                           Type = 'DWord'; Category = 'Brave';       Origin = $true  },
     @{ Id = 'brave.wallet';                Name = 'Disable Brave Wallet';             Key = 'BraveWalletDisabled';                    Value = 1;                           Type = 'DWord'; Category = 'Brave';       Origin = $true  },
@@ -31,7 +31,7 @@ $featureCatalog = @(
     @{ Id = 'brave.web_discovery';         Name = 'Disable Web Discovery';            Key = 'BraveWebDiscoveryEnabled';               Value = 0;                           Type = 'DWord'; Category = 'Brave';       Origin = $true  },
     @{ Id = 'brave.speedreader';           Name = 'Disable Speedreader';              Key = 'BraveSpeedreaderEnabled';                Value = 0;                           Type = 'DWord'; Category = 'Brave';       Origin = $true  },
     @{ Id = 'brave.tor';                   Name = 'Disable Tor';                      Key = 'TorDisabled';                            Value = 1;                           Type = 'DWord'; Category = 'Brave';       Origin = $true  },
-    @{ Id = 'brave.sync';                  Name = 'Disable Sync';                     Key = 'SyncDisabled';                           Value = 1;                           Type = 'DWord'; Category = 'Brave';       Origin = $false },
+    @{ Id = 'brave.sync';                  Name = 'Disable Sync';                     Key = 'SyncDisabled';                           Value = 1;                           Type = 'DWord'; Category = 'Brave';       Origin = $false; Advanced = $true  },
 
     @{ Id = 'perf.background';             Name = 'Disable Background Mode';          Key = 'BackgroundModeEnabled';                  Value = 0;                           Type = 'DWord'; Category = 'Performance'; Origin = $false },
     @{ Id = 'perf.media_recs';             Name = 'Disable Media Recommendations';    Key = 'MediaRecommendationsEnabled';            Value = 0;                           Type = 'DWord'; Category = 'Performance'; Origin = $false },
@@ -41,9 +41,9 @@ $featureCatalog = @(
     @{ Id = 'perf.spellcheck';             Name = 'Disable Spellcheck';               Key = 'SpellcheckEnabled';                      Value = 0;                           Type = 'DWord'; Category = 'Performance'; Origin = $false },
     @{ Id = 'perf.promotions';             Name = 'Disable Promotions';               Key = 'PromotionsEnabled';                      Value = 0;                           Type = 'DWord'; Category = 'Performance'; Origin = $false },
     @{ Id = 'perf.search_suggest';         Name = 'Disable Search Suggestions';       Key = 'SearchSuggestEnabled';                   Value = 0;                           Type = 'DWord'; Category = 'Performance'; Origin = $false },
-    @{ Id = 'perf.printing';               Name = 'Disable Printing';                 Key = 'PrintingEnabled';                        Value = 0;                           Type = 'DWord'; Category = 'Performance'; Origin = $false },
+    @{ Id = 'perf.printing';               Name = 'Disable Printing';                 Key = 'PrintingEnabled';                        Value = 0;                           Type = 'DWord'; Category = 'Performance'; Origin = $false; Advanced = $true  },
     @{ Id = 'perf.default_browser';        Name = 'Disable Default Browser Prompt';   Key = 'DefaultBrowserSettingEnabled';           Value = 0;                           Type = 'DWord'; Category = 'Performance'; Origin = $false },
-    @{ Id = 'perf.devtools';               Name = 'Disable Developer Tools';          Key = 'DeveloperToolsAvailability';             Value = 2;                           Type = 'DWord'; Category = 'Performance'; Origin = $false },
+    @{ Id = 'perf.devtools';               Name = 'Disable Developer Tools';          Key = 'DeveloperToolsAvailability';             Value = 2;                           Type = 'DWord'; Category = 'Performance'; Origin = $false; Advanced = $true  },
     @{ Id = 'perf.wayback';                Name = 'Disable Wayback Machine';          Key = 'BraveWaybackMachineEnabled';             Value = 0;                           Type = 'DWord'; Category = 'Performance'; Origin = $true  }
 )
 
@@ -93,17 +93,21 @@ $hardeningPreset = @(
 $originAndHardeningPreset = @($originPreset + $hardeningPreset | Select-Object -Unique)
 
 $presets = [ordered]@{
-    'Origin + Hardening - Recommended' = $originAndHardeningPreset
-    'Origin'                           = $originPreset
-    'Hardening'                        = $hardeningPreset
-    'Custom'                           = @()
+    'Origin'              = $originPreset
+    'Origin + Hardening'  = $originAndHardeningPreset
+    'Hardening'           = $hardeningPreset
+    'Custom'              = @()
 }
 
 $presetDescriptions = [ordered]@{
-    'Origin + Hardening - Recommended' = 'Recommended preset: Origin-like debloating plus practical privacy hardening.'
-    'Origin'                           = 'Closest to Brave Origin upgrade-like behavior using managed policies.'
-    'Hardening'                        = 'Practical privacy hardening preset for regular Brave without high-friction lock-down policies.'
-    'Custom'                           = 'Manual selection. Choose each policy toggle yourself.'
+    'Origin'              = 'Recommended preset for most users: Origin-like debloating for regular Brave with low setup risk.'
+    'Origin + Hardening'  = 'Privacy-oriented preset: Origin-like debloating plus practical privacy hardening.'
+    'Hardening'           = 'Practical privacy hardening preset for regular Brave without high-friction lock-down policies.'
+    'Custom'              = 'Manual selection. Choose each policy toggle yourself.'
+}
+
+$presetAliases = @{
+    'Origin + Hardening - Recommended' = 'Origin + Hardening'
 }
 
 $dohPresets = [ordered]@{

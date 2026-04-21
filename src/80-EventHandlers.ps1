@@ -204,8 +204,13 @@ $importButton.Add_Click({
             $dnsPresetDropdown.SelectedItem = Detect-DnsPresetName -Template $dnsTemplateBox.Text
         }
 
-        if ($payload.PSObject.Properties.Name -contains 'Preset' -and $payload.Preset -and $presetDropdown.Items.Contains([string]$payload.Preset)) {
-            $presetDropdown.SelectedItem = [string]$payload.Preset
+        $importPreset = if ($payload.PSObject.Properties.Name -contains 'Preset' -and $payload.Preset) { [string]$payload.Preset } else { '' }
+        if ($presetAliases.ContainsKey($importPreset)) {
+            $importPreset = [string]$presetAliases[$importPreset]
+        }
+
+        if (-not [string]::IsNullOrWhiteSpace($importPreset) -and $presetDropdown.Items.Contains($importPreset)) {
+            $presetDropdown.SelectedItem = $importPreset
         }
         else {
             $presetDropdown.SelectedItem = Get-MatchingPresetName
