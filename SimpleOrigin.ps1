@@ -336,13 +336,11 @@ $originPreset = @(
 
 $hardeningPreset = @(
     'telemetry.metrics',
-    'telemetry.safebrowsing_rep',
     'telemetry.url_data',
     'telemetry.p3a',
     'telemetry.stats_ping',
     'privacy.gpc',
     'privacy.webrtc',
-    'privacy.quic',
     'privacy.third_party_cookies',
     'brave.rewards',
     'brave.wallet',
