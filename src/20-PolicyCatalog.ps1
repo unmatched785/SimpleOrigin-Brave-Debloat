@@ -11,7 +11,6 @@ $featureCatalog = @(
     @{ Id = 'privacy.autofill_cards';      Name = 'Disable Autofill (Credit Cards)';  Key = 'AutofillCreditCardEnabled';              Value = 0;                           Type = 'DWord'; Category = 'Privacy';     Origin = $false },
     @{ Id = 'privacy.password_manager';    Name = 'Disable Password Manager';         Key = 'PasswordManagerEnabled';                 Value = 0;                           Type = 'DWord'; Category = 'Privacy';     Origin = $false },
     @{ Id = 'privacy.browser_signin';      Name = 'Disable Browser Sign-in';          Key = 'BrowserSignin';                          Value = 0;                           Type = 'DWord'; Category = 'Privacy';     Origin = $false },
-    @{ Id = 'privacy.dnt';                 Name = 'Enable Do Not Track';              Key = 'EnableDoNotTrack';                       Value = 1;                           Type = 'DWord'; Category = 'Privacy';     Origin = $false },
     @{ Id = 'privacy.gpc';                 Name = 'Enable Global Privacy Control';    Key = 'BraveGlobalPrivacyControlEnabled';       Value = 1;                           Type = 'DWord'; Category = 'Privacy';     Origin = $false },
     @{ Id = 'privacy.webrtc';              Name = 'Disable WebRTC IP Leak';           Key = 'WebRtcIPHandling';                       Value = 'disable_non_proxied_udp';    Type = 'String'; Category = 'Privacy';    Origin = $false },
     @{ Id = 'privacy.quic';                Name = 'Disable QUIC Protocol';            Key = 'QuicAllowed';                            Value = 0;                           Type = 'DWord'; Category = 'Privacy';     Origin = $false },
@@ -70,9 +69,13 @@ $originPreset = @(
 
 $hardeningPreset = @(
     'telemetry.metrics',
+    'telemetry.safebrowsing_rep',
+    'telemetry.url_data',
     'telemetry.p3a',
     'telemetry.stats_ping',
+    'privacy.gpc',
     'privacy.webrtc',
+    'privacy.quic',
     'privacy.third_party_cookies',
     'brave.rewards',
     'brave.wallet',
@@ -94,7 +97,7 @@ $presets = [ordered]@{
 $presetDescriptions = [ordered]@{
     'Origin + Hardening - Recommended' = 'Recommended preset: Origin-like debloating plus practical privacy hardening.'
     'Origin'                           = 'Closest to Brave Origin upgrade-like behavior using managed policies.'
-    'Hardening'                        = 'Privacy-oriented preset inspired by public Brave hardening guidance.'
+    'Hardening'                        = 'Practical privacy hardening preset for regular Brave without high-friction lock-down policies.'
     'Custom'                           = 'Manual selection. Choose each policy toggle yourself.'
 }
 

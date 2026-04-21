@@ -67,7 +67,7 @@ The closest preset to **Brave Origin-like behavior** using managed policies.
 
 ### Hardening
 
-A stricter privacy-oriented preset inspired by public Brave hardening guidance.
+A practical privacy hardening preset for regular Brave. It avoids high-friction lock-down policies while still adding stronger telemetry and network privacy controls.
 
 ### Custom
 
