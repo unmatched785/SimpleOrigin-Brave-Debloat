@@ -1,5 +1,5 @@
 $form = New-Object System.Windows.Forms.Form
-$designFormSize = New-Object System.Drawing.Size(1220, 1540)
+$designFormSize = New-Object System.Drawing.Size(1180, 1040)
 $minimumFormSize = New-Object System.Drawing.Size(780, 600)
 $initialFormWidth = $designFormSize.Width
 $initialFormHeight = $designFormSize.Height
