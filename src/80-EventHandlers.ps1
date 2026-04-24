@@ -13,22 +13,9 @@ $applyButton.Add_Click({
     $script:registryPath = [string]$scopeInfo.TargetPath
 
     if ($scopeInfo.ScopeName -eq 'Machine' -and -not (Test-IsAdmin)) {
-        [System.Windows.Forms.MessageBox]::Show(
-            'Machine scope requires administrator rights. Switch Write scope to User (HKCU) or relaunch as admin.',
-            $script:appDisplayName,
-            [System.Windows.Forms.MessageBoxButtons]::OK,
-            [System.Windows.Forms.MessageBoxIcon]::Warning
-        ) | Out-Null
-        return
-    }
-
-    if (([string]$dnsDropdown.SelectedItem) -eq 'custom' -and [string]::IsNullOrWhiteSpace($dnsTemplateBox.Text)) {
-        [System.Windows.Forms.MessageBox]::Show(
-            'Custom DoH requires a template URL, e.g. https://cloudflare-dns.com/dns-query',
-            $script:appDisplayName,
-            [System.Windows.Forms.MessageBoxButtons]::OK,
-            [System.Windows.Forms.MessageBoxIcon]::Warning
-        ) | Out-Null
+        if (Request-ElevatedRelaunch -Reason 'Machine scope requires administrator rights.') {
+            $form.Close()
+        }
         return
     }
 
@@ -91,12 +78,9 @@ $applyButton.Add_Click({
 $resetButton.Add_Click({
     $scopeSummary = Get-ManagedScopeSummary
     if ($scopeSummary.HasMachine -and -not (Test-IsAdmin)) {
-        [System.Windows.Forms.MessageBox]::Show(
-            'Reset Managed Policies needs administrator rights when Machine (HKLM) keys are present.',
-            $script:appDisplayName,
-            [System.Windows.Forms.MessageBoxButtons]::OK,
-            [System.Windows.Forms.MessageBoxIcon]::Warning
-        ) | Out-Null
+        if (Request-ElevatedRelaunch -Reason 'Reset Managed Policies needs administrator rights because Machine (HKLM) keys are present.') {
+            $form.Close()
+        }
         return
     }
 

@@ -135,6 +135,29 @@ function Clear-OtherScopeManagedProperty {
     }
 }
 
+function Test-DohTemplate {
+    param([string]$Template)
+
+    if ([string]::IsNullOrWhiteSpace($Template)) {
+        return 'Custom DoH requires a template URL, e.g. https://cloudflare-dns.com/dns-query'
+    }
+
+    $trimmed = $Template.Trim()
+    if ($trimmed -match '\s') {
+        return 'Custom DoH template URLs cannot contain whitespace.'
+    }
+    if ($trimmed -match 'YOUR_PROFILE_ID') {
+        return 'Replace YOUR_PROFILE_ID with your real NextDNS profile ID before applying.'
+    }
+
+    $uri = $null
+    if (-not [System.Uri]::TryCreate($trimmed, [System.UriKind]::Absolute, [ref]$uri) -or $uri.Scheme -ne 'https') {
+        return 'Custom DoH requires an absolute https:// template URL.'
+    }
+
+    return $null
+}
+
 function Set-DnsSettings {
     param(
         [string]$DnsMode,
@@ -157,9 +180,10 @@ function Set-DnsSettings {
     }
 
     if ($DnsMode -eq 'custom') {
-        if ([string]::IsNullOrWhiteSpace($DnsTemplates)) {
+        $validationError = Test-DohTemplate -Template $DnsTemplates
+        if ($validationError) {
             [System.Windows.Forms.MessageBox]::Show(
-                'Custom DoH requires a template URL, e.g. https://cloudflare-dns.com/dns-query',
+                $validationError,
                 $script:appDisplayName,
                 [System.Windows.Forms.MessageBoxButtons]::OK,
                 [System.Windows.Forms.MessageBoxIcon]::Warning
@@ -168,7 +192,7 @@ function Set-DnsSettings {
         }
 
         $resolvedMode = 'secure'
-        Set-ManagedPropertyAtPath -Path $TargetPath -Key 'DnsOverHttpsTemplates' -Value $DnsTemplates -Type String
+        Set-ManagedPropertyAtPath -Path $TargetPath -Key 'DnsOverHttpsTemplates' -Value $DnsTemplates.Trim() -Type String
     }
     else {
         [void](Remove-ManagedPropertyFromPath -Key 'DnsOverHttpsTemplates' -Path $TargetPath)

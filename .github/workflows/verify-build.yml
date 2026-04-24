@@ -1,0 +1,42 @@
+name: Verify build
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  verify-build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Parse source files
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          Get-ChildItem -LiteralPath src -Filter '*.ps1' -File |
+            ForEach-Object {
+              $parseErrors = $null
+              $null = [System.Management.Automation.PSParser]::Tokenize((Get-Content -LiteralPath $_.FullName -Raw), [ref]$parseErrors)
+              if ($parseErrors) {
+                throw "Parse error in $($_.FullName): $($parseErrors[0].Message)"
+              }
+            }
+
+      - name: Build published script
+        shell: powershell
+        run: .\Compile.ps1
+
+      - name: Ensure published script is current
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          git diff --exit-code -- SimpleOrigin.ps1
+          if ($LASTEXITCODE -ne 0) {
+            throw 'SimpleOrigin.ps1 is not up to date. Run Compile.ps1 and commit the rebuilt file.'
+          }
+          Write-Host 'SimpleOrigin.ps1 is up to date.'

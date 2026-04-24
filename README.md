@@ -5,6 +5,7 @@
 ![PowerShell](https://img.shields.io/badge/PowerShell-5.1%2B-5391FE?style=flat-square)
 ![Latest Release](https://img.shields.io/github/v/release/unmatched785/SimpleOrigin-Brave-Debloat?display_name=tag&style=flat-square)
 ![Repo Stars](https://img.shields.io/github/stars/unmatched785/SimpleOrigin-Brave-Debloat?style=flat-square)
+![Verify build](https://img.shields.io/github/actions/workflow/status/unmatched785/SimpleOrigin-Brave-Debloat/verify-build.yml?branch=main&label=build&style=flat-square)
 
 `SimpleOrigin-Brave-Debloat` is a Windows PowerShell GUI for configuring **Brave managed policies** on **regular Brave**.
 
@@ -21,6 +22,14 @@ It gives you:
 ![simpleorigin](./simpleorigin.png)
 
 ## One-line launch
+
+Recommended stable launch, pinned to the 0.5.0 release tag:
+
+```powershell
+irm https://raw.githubusercontent.com/unmatched785/SimpleOrigin-Brave-Debloat/refs/tags/0.5.0/SimpleOrigin.ps1|iex
+```
+
+Latest development build from `main`:
 
 ```powershell
 irm https://raw.githubusercontent.com/unmatched785/SimpleOrigin-Brave-Debloat/main/SimpleOrigin.ps1|iex
@@ -80,6 +89,8 @@ Manual mode. Choose each policy toggle yourself.
 **Recommended default: User (HKCU).**
 
 Use **User (HKCU) - Recommended** for most personal PCs. Use **Machine (HKLM)** only when you intentionally want system-wide Brave policy for all users on the device.
+
+The app opens in normal user context by default. It asks to relaunch as administrator only if you choose a Machine-scope action that needs HKLM access.
 
 For the keys managed by this tool, **Apply** tries to make the selected scope authoritative by:
 
@@ -155,10 +166,11 @@ powershell -ExecutionPolicy Bypass -File .\SimpleOrigin.ps1
 
 - Light theme is the default.
 - Dark mode is optional via the top-right theme button.
+- The app does not request administrator rights on launch.
 - Restart Brave after applying settings.
 - Verify results in `brave://policy` if needed.
 - **Reset Managed Policies** removes the Brave policy values touched by this tool from both HKCU and HKLM.
-- If you declined elevation, User-scope Apply still works, but clearing conflicting Machine-scope values may fail.
+- If you decline elevation, User-scope Apply still works, but clearing conflicting Machine-scope values may fail.
 - This tool does not modify Brave binaries and does not try to impersonate the separate Brave Origin product.
 
 ## Badge note
@@ -171,7 +183,6 @@ You can make the same kind of badges for release version, stars, downloads, plat
 
 Near-term follow-up items:
 
-- deferred elevation instead of admin prompt on launch
 - better mixed-scope conflict reporting
 - site-specific Brave Shields list management
 - clearer per-policy compatibility / minimum-version notes

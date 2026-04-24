@@ -1,10 +1,18 @@
 [CmdletBinding()]
 param(
-    [string]$SourceDir = (Join-Path $PSScriptRoot 'src'),
-    [string]$OutputPath = (Join-Path $PSScriptRoot 'SimpleOrigin.ps1')
+    [string]$SourceDir,
+    [string]$OutputPath
 )
 
 $ErrorActionPreference = 'Stop'
+
+$scriptRoot = if ($PSScriptRoot) { $PSScriptRoot } else { Split-Path -Parent $MyInvocation.MyCommand.Path }
+if ([string]::IsNullOrWhiteSpace($SourceDir)) {
+    $SourceDir = Join-Path $scriptRoot 'src'
+}
+if ([string]::IsNullOrWhiteSpace($OutputPath)) {
+    $OutputPath = Join-Path $scriptRoot 'SimpleOrigin.ps1'
+}
 
 if (-not (Test-Path -LiteralPath $SourceDir)) {
     throw "Source directory not found: $SourceDir"

@@ -210,24 +210,50 @@ function Test-IsAdmin {
     return $principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
 }
 
-if (-not $NoAdminRelaunch -and -not (Test-IsAdmin)) {
-    try {
-        Start-Process powershell -ArgumentList "-ExecutionPolicy Bypass -File `"$($MyInvocation.MyCommand.Path)`" -Bootstrap -NoAdminRelaunch" -Verb RunAs
-        exit
-    } catch {
+$script:currentScriptPath = if ($PSCommandPath) { $PSCommandPath } else { $MyInvocation.MyCommand.Path }
+
+function Request-ElevatedRelaunch {
+    param([string]$Reason)
+
+    if ([string]::IsNullOrWhiteSpace($script:currentScriptPath) -or -not (Test-Path -LiteralPath $script:currentScriptPath)) {
         [System.Windows.Forms.MessageBox]::Show(
-            "Administrator rights were not granted. The app will continue, but machine-level Apply/Reset may fail.",
+            "$Reason Relaunch this script as administrator if you want to write or clear Machine (HKLM) policies.",
             $script:appDisplayName,
             [System.Windows.Forms.MessageBoxButtons]::OK,
             [System.Windows.Forms.MessageBoxIcon]::Warning
         ) | Out-Null
+        return $false
+    }
+
+    $confirm = [System.Windows.Forms.MessageBox]::Show(
+        "$Reason`r`n`r`nRelaunch as administrator now?",
+        $script:appDisplayName,
+        [System.Windows.Forms.MessageBoxButtons]::YesNo,
+        [System.Windows.Forms.MessageBoxIcon]::Question
+    )
+
+    if ($confirm -ne [System.Windows.Forms.DialogResult]::Yes) {
+        return $false
+    }
+
+    try {
+        Start-Process powershell -ArgumentList "-ExecutionPolicy Bypass -File `"$script:currentScriptPath`" -Bootstrap -NoAdminRelaunch" -Verb RunAs
+        return $true
+    } catch {
+        [System.Windows.Forms.MessageBox]::Show(
+            "Administrator rights were not granted. The app will continue in the current user context.",
+            $script:appDisplayName,
+            [System.Windows.Forms.MessageBoxButtons]::OK,
+            [System.Windows.Forms.MessageBoxIcon]::Warning
+        ) | Out-Null
+        return $false
     }
 }
 
 $machineRegistryPath = "HKLM:\SOFTWARE\Policies\BraveSoftware\Brave"
 $userRegistryPath    = "HKCU:\SOFTWARE\Policies\BraveSoftware\Brave"
-$script:registryPath = $machineRegistryPath
-$script:toolVersion  = '0.4.2'
+$script:registryPath = $userRegistryPath
+$script:toolVersion  = '0.5.0'
 $script:appWindowTitle = $script:appDisplayName
 
 function Ensure-PolicyPathExists {
@@ -526,6 +552,29 @@ function Clear-OtherScopeManagedProperty {
     }
 }
 
+function Test-DohTemplate {
+    param([string]$Template)
+
+    if ([string]::IsNullOrWhiteSpace($Template)) {
+        return 'Custom DoH requires a template URL, e.g. https://cloudflare-dns.com/dns-query'
+    }
+
+    $trimmed = $Template.Trim()
+    if ($trimmed -match '\s') {
+        return 'Custom DoH template URLs cannot contain whitespace.'
+    }
+    if ($trimmed -match 'YOUR_PROFILE_ID') {
+        return 'Replace YOUR_PROFILE_ID with your real NextDNS profile ID before applying.'
+    }
+
+    $uri = $null
+    if (-not [System.Uri]::TryCreate($trimmed, [System.UriKind]::Absolute, [ref]$uri) -or $uri.Scheme -ne 'https') {
+        return 'Custom DoH requires an absolute https:// template URL.'
+    }
+
+    return $null
+}
+
 function Set-DnsSettings {
     param(
         [string]$DnsMode,
@@ -548,9 +597,10 @@ function Set-DnsSettings {
     }
 
     if ($DnsMode -eq 'custom') {
-        if ([string]::IsNullOrWhiteSpace($DnsTemplates)) {
+        $validationError = Test-DohTemplate -Template $DnsTemplates
+        if ($validationError) {
             [System.Windows.Forms.MessageBox]::Show(
-                'Custom DoH requires a template URL, e.g. https://cloudflare-dns.com/dns-query',
+                $validationError,
                 $script:appDisplayName,
                 [System.Windows.Forms.MessageBoxButtons]::OK,
                 [System.Windows.Forms.MessageBoxIcon]::Warning
@@ -559,7 +609,7 @@ function Set-DnsSettings {
         }
 
         $resolvedMode = 'secure'
-        Set-ManagedPropertyAtPath -Path $TargetPath -Key 'DnsOverHttpsTemplates' -Value $DnsTemplates -Type String
+        Set-ManagedPropertyAtPath -Path $TargetPath -Key 'DnsOverHttpsTemplates' -Value $DnsTemplates.Trim() -Type String
     }
     else {
         [void](Remove-ManagedPropertyFromPath -Key 'DnsOverHttpsTemplates' -Path $TargetPath)
@@ -1250,22 +1300,9 @@ $applyButton.Add_Click({
     $script:registryPath = [string]$scopeInfo.TargetPath
 
     if ($scopeInfo.ScopeName -eq 'Machine' -and -not (Test-IsAdmin)) {
-        [System.Windows.Forms.MessageBox]::Show(
-            'Machine scope requires administrator rights. Switch Write scope to User (HKCU) or relaunch as admin.',
-            $script:appDisplayName,
-            [System.Windows.Forms.MessageBoxButtons]::OK,
-            [System.Windows.Forms.MessageBoxIcon]::Warning
-        ) | Out-Null
-        return
-    }
-
-    if (([string]$dnsDropdown.SelectedItem) -eq 'custom' -and [string]::IsNullOrWhiteSpace($dnsTemplateBox.Text)) {
-        [System.Windows.Forms.MessageBox]::Show(
-            'Custom DoH requires a template URL, e.g. https://cloudflare-dns.com/dns-query',
-            $script:appDisplayName,
-            [System.Windows.Forms.MessageBoxButtons]::OK,
-            [System.Windows.Forms.MessageBoxIcon]::Warning
-        ) | Out-Null
+        if (Request-ElevatedRelaunch -Reason 'Machine scope requires administrator rights.') {
+            $form.Close()
+        }
         return
     }
 
@@ -1328,12 +1365,9 @@ $applyButton.Add_Click({
 $resetButton.Add_Click({
     $scopeSummary = Get-ManagedScopeSummary
     if ($scopeSummary.HasMachine -and -not (Test-IsAdmin)) {
-        [System.Windows.Forms.MessageBox]::Show(
-            'Reset Managed Policies needs administrator rights when Machine (HKLM) keys are present.',
-            $script:appDisplayName,
-            [System.Windows.Forms.MessageBoxButtons]::OK,
-            [System.Windows.Forms.MessageBoxIcon]::Warning
-        ) | Out-Null
+        if (Request-ElevatedRelaunch -Reason 'Reset Managed Policies needs administrator rights because Machine (HKLM) keys are present.') {
+            $form.Close()
+        }
         return
     }
 

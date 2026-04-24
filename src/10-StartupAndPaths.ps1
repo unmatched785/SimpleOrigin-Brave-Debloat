@@ -5,24 +5,50 @@ function Test-IsAdmin {
     return $principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
 }
 
-if (-not $NoAdminRelaunch -and -not (Test-IsAdmin)) {
-    try {
-        Start-Process powershell -ArgumentList "-ExecutionPolicy Bypass -File `"$($MyInvocation.MyCommand.Path)`" -Bootstrap -NoAdminRelaunch" -Verb RunAs
-        exit
-    } catch {
+$script:currentScriptPath = if ($PSCommandPath) { $PSCommandPath } else { $MyInvocation.MyCommand.Path }
+
+function Request-ElevatedRelaunch {
+    param([string]$Reason)
+
+    if ([string]::IsNullOrWhiteSpace($script:currentScriptPath) -or -not (Test-Path -LiteralPath $script:currentScriptPath)) {
         [System.Windows.Forms.MessageBox]::Show(
-            "Administrator rights were not granted. The app will continue, but machine-level Apply/Reset may fail.",
+            "$Reason Relaunch this script as administrator if you want to write or clear Machine (HKLM) policies.",
             $script:appDisplayName,
             [System.Windows.Forms.MessageBoxButtons]::OK,
             [System.Windows.Forms.MessageBoxIcon]::Warning
         ) | Out-Null
+        return $false
+    }
+
+    $confirm = [System.Windows.Forms.MessageBox]::Show(
+        "$Reason`r`n`r`nRelaunch as administrator now?",
+        $script:appDisplayName,
+        [System.Windows.Forms.MessageBoxButtons]::YesNo,
+        [System.Windows.Forms.MessageBoxIcon]::Question
+    )
+
+    if ($confirm -ne [System.Windows.Forms.DialogResult]::Yes) {
+        return $false
+    }
+
+    try {
+        Start-Process powershell -ArgumentList "-ExecutionPolicy Bypass -File `"$script:currentScriptPath`" -Bootstrap -NoAdminRelaunch" -Verb RunAs
+        return $true
+    } catch {
+        [System.Windows.Forms.MessageBox]::Show(
+            "Administrator rights were not granted. The app will continue in the current user context.",
+            $script:appDisplayName,
+            [System.Windows.Forms.MessageBoxButtons]::OK,
+            [System.Windows.Forms.MessageBoxIcon]::Warning
+        ) | Out-Null
+        return $false
     }
 }
 
 $machineRegistryPath = "HKLM:\SOFTWARE\Policies\BraveSoftware\Brave"
 $userRegistryPath    = "HKCU:\SOFTWARE\Policies\BraveSoftware\Brave"
-$script:registryPath = $machineRegistryPath
-$script:toolVersion  = '0.4.2'
+$script:registryPath = $userRegistryPath
+$script:toolVersion  = '0.5.0'
 $script:appWindowTitle = $script:appDisplayName
 
 function Ensure-PolicyPathExists {
