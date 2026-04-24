@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## 0.5.3 - 2026-04-24
+
+### Fixed
+
+- Added a WinForms thread exception handler so registry permission failures cannot surface the default component exception dialog.
+- Avoided Machine-scope cleanup attempts entirely during non-admin User-scope Apply.
+- Guarded startup policy detection so restricted registry reads cannot interrupt app startup.
+
 ## 0.5.2 - 2026-04-24
 
 ### Fixed

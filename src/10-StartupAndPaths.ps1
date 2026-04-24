@@ -48,7 +48,7 @@ function Request-ElevatedRelaunch {
 $machineRegistryPath = "HKLM:\SOFTWARE\Policies\BraveSoftware\Brave"
 $userRegistryPath    = "HKCU:\SOFTWARE\Policies\BraveSoftware\Brave"
 $script:registryPath = $userRegistryPath
-$script:toolVersion  = '0.5.2'
+$script:toolVersion  = '0.5.3'
 $script:appWindowTitle = $script:appDisplayName
 
 function Test-IsMachinePolicyPath {

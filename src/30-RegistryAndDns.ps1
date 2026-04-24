@@ -150,8 +150,13 @@ function Clear-OtherScopeManagedProperty {
         [string]$Key,
         [string]$OtherPath,
         [string]$OtherScopeName,
-        [System.Collections.ArrayList]$OtherScopeWarnings
+    [System.Collections.ArrayList]$OtherScopeWarnings
     )
+
+    if ((Test-IsMachinePolicyPath -Path $OtherPath) -and -not (Test-IsAdmin)) {
+        Add-OtherScopeWarning -Warnings $OtherScopeWarnings -ScopeName $OtherScopeName -Key $Key
+        return
+    }
 
     if (-not (Remove-ManagedPropertyFromPath -Key $Key -Path $OtherPath)) {
         Add-OtherScopeWarning -Warnings $OtherScopeWarnings -ScopeName $OtherScopeName -Key $Key

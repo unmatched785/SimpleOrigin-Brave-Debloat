@@ -55,6 +55,17 @@ $OutputEncoding = [System.Text.Encoding]::UTF8
 Add-Type -AssemblyName System.Windows.Forms
 Add-Type -AssemblyName System.Drawing
 
+[System.Windows.Forms.Application]::SetUnhandledExceptionMode([System.Windows.Forms.UnhandledExceptionMode]::CatchException)
+[System.Windows.Forms.Application]::add_ThreadException({
+    param($sender, $eventArgs)
+    [System.Windows.Forms.MessageBox]::Show(
+        "Unexpected error: $($eventArgs.Exception.Message)",
+        $script:appDisplayName,
+        [System.Windows.Forms.MessageBoxButtons]::OK,
+        [System.Windows.Forms.MessageBoxIcon]::Error
+    ) | Out-Null
+})
+
 Add-Type -ReferencedAssemblies @('System.Windows.Forms', 'System.Drawing') -TypeDefinition @'
 using System;
 using System.Drawing;
@@ -253,7 +264,7 @@ function Request-ElevatedRelaunch {
 $machineRegistryPath = "HKLM:\SOFTWARE\Policies\BraveSoftware\Brave"
 $userRegistryPath    = "HKCU:\SOFTWARE\Policies\BraveSoftware\Brave"
 $script:registryPath = $userRegistryPath
-$script:toolVersion  = '0.5.2'
+$script:toolVersion  = '0.5.3'
 $script:appWindowTitle = $script:appDisplayName
 
 function Test-IsMachinePolicyPath {
@@ -606,8 +617,13 @@ function Clear-OtherScopeManagedProperty {
         [string]$Key,
         [string]$OtherPath,
         [string]$OtherScopeName,
-        [System.Collections.ArrayList]$OtherScopeWarnings
+    [System.Collections.ArrayList]$OtherScopeWarnings
     )
+
+    if ((Test-IsMachinePolicyPath -Path $OtherPath) -and -not (Test-IsAdmin)) {
+        Add-OtherScopeWarning -Warnings $OtherScopeWarnings -ScopeName $OtherScopeName -Key $Key
+        return
+    }
 
     if (-not (Remove-ManagedPropertyFromPath -Key $Key -Path $OtherPath)) {
         Add-OtherScopeWarning -Warnings $OtherScopeWarnings -ScopeName $OtherScopeName -Key $Key
@@ -1387,12 +1403,16 @@ $applyButton.Add_Click({
                 [void](Remove-ManagedPropertyFromPath -Key $key -Path $scopeInfo.TargetPath)
             }
 
-            Clear-OtherScopeManagedProperty -Key $key -OtherPath $scopeInfo.OtherPath -OtherScopeName $otherScopeName -OtherScopeWarnings $otherScopeWarnings
+            if ($scopeInfo.ScopeName -eq 'Machine' -or (Test-IsAdmin)) {
+                Clear-OtherScopeManagedProperty -Key $key -OtherPath $scopeInfo.OtherPath -OtherScopeName $otherScopeName -OtherScopeWarnings $otherScopeWarnings
+            }
         }
 
         foreach ($legacyKey in $legacyManagedPolicyKeys) {
             [void](Remove-ManagedPropertyFromPath -Key $legacyKey -Path $scopeInfo.TargetPath)
-            Clear-OtherScopeManagedProperty -Key $legacyKey -OtherPath $scopeInfo.OtherPath -OtherScopeName $otherScopeName -OtherScopeWarnings $otherScopeWarnings
+            if ($scopeInfo.ScopeName -eq 'Machine' -or (Test-IsAdmin)) {
+                Clear-OtherScopeManagedProperty -Key $legacyKey -OtherPath $scopeInfo.OtherPath -OtherScopeName $otherScopeName -OtherScopeWarnings $otherScopeWarnings
+            }
         }
 
         if (-not (Set-DnsSettings -DnsMode ([string]$dnsDropdown.SelectedItem) -DnsTemplates $dnsTemplateBox.Text -TargetPath $scopeInfo.TargetPath -OtherPath $scopeInfo.OtherPath -TargetScopeName $scopeInfo.ScopeName -OtherScopeWarnings $otherScopeWarnings)) {
@@ -1400,7 +1420,9 @@ $applyButton.Add_Click({
             return
         }
 
-        [void](Cleanup-PolicyPathTree -LeafPath $machineRegistryPath)
+        if (Test-IsAdmin) {
+            [void](Cleanup-PolicyPathTree -LeafPath $machineRegistryPath)
+        }
         [void](Cleanup-PolicyPathTree -LeafPath $userRegistryPath)
 
         Initialize-CurrentSettings
@@ -1602,10 +1624,20 @@ Apply-Theme -DarkMode $false
 $scopeDropdown.SelectedIndex = 0
 $presetDropdown.SelectedIndex = 0
 Update-PresetDescription
-Initialize-CurrentSettings
+try {
+    Initialize-CurrentSettings
+}
+catch {
+    $statusLabel.Text = 'Ready. Existing policy detection was limited by registry permissions.'
+}
 $form.Add_Shown({
-    $scopeDropdown.SelectedIndex = if ([string]$scopeDropdown.SelectedItem -like 'Machine*') { 1 } else { 0 }
-    if (-not $presetDropdown.SelectedItem) { $presetDropdown.SelectedIndex = 0 }
-    Update-PresetDescription
+    try {
+        $scopeDropdown.SelectedIndex = if ([string]$scopeDropdown.SelectedItem -like 'Machine*') { 1 } else { 0 }
+        if (-not $presetDropdown.SelectedItem) { $presetDropdown.SelectedIndex = 0 }
+        Update-PresetDescription
+    }
+    catch {
+        $statusLabel.Text = 'Ready.'
+    }
 })
 [void]$form.ShowDialog()

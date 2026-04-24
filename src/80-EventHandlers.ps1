@@ -38,12 +38,16 @@ $applyButton.Add_Click({
                 [void](Remove-ManagedPropertyFromPath -Key $key -Path $scopeInfo.TargetPath)
             }
 
-            Clear-OtherScopeManagedProperty -Key $key -OtherPath $scopeInfo.OtherPath -OtherScopeName $otherScopeName -OtherScopeWarnings $otherScopeWarnings
+            if ($scopeInfo.ScopeName -eq 'Machine' -or (Test-IsAdmin)) {
+                Clear-OtherScopeManagedProperty -Key $key -OtherPath $scopeInfo.OtherPath -OtherScopeName $otherScopeName -OtherScopeWarnings $otherScopeWarnings
+            }
         }
 
         foreach ($legacyKey in $legacyManagedPolicyKeys) {
             [void](Remove-ManagedPropertyFromPath -Key $legacyKey -Path $scopeInfo.TargetPath)
-            Clear-OtherScopeManagedProperty -Key $legacyKey -OtherPath $scopeInfo.OtherPath -OtherScopeName $otherScopeName -OtherScopeWarnings $otherScopeWarnings
+            if ($scopeInfo.ScopeName -eq 'Machine' -or (Test-IsAdmin)) {
+                Clear-OtherScopeManagedProperty -Key $legacyKey -OtherPath $scopeInfo.OtherPath -OtherScopeName $otherScopeName -OtherScopeWarnings $otherScopeWarnings
+            }
         }
 
         if (-not (Set-DnsSettings -DnsMode ([string]$dnsDropdown.SelectedItem) -DnsTemplates $dnsTemplateBox.Text -TargetPath $scopeInfo.TargetPath -OtherPath $scopeInfo.OtherPath -TargetScopeName $scopeInfo.ScopeName -OtherScopeWarnings $otherScopeWarnings)) {
@@ -51,7 +55,9 @@ $applyButton.Add_Click({
             return
         }
 
-        [void](Cleanup-PolicyPathTree -LeafPath $machineRegistryPath)
+        if (Test-IsAdmin) {
+            [void](Cleanup-PolicyPathTree -LeafPath $machineRegistryPath)
+        }
         [void](Cleanup-PolicyPathTree -LeafPath $userRegistryPath)
 
         Initialize-CurrentSettings
