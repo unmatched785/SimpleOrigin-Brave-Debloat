@@ -9,7 +9,7 @@ All notable changes to this project will be documented in this file.
 - Added deferred elevation for Machine-scope Apply and Reset flows instead of prompting for administrator rights on launch.
 - Added validation for custom DNS-over-HTTPS template URLs, including placeholder NextDNS profile detection.
 - Added a GitHub Actions build verification workflow that parses source files, rebuilds `SimpleOrigin.ps1`, and checks that the published script is current.
-- Added a release-pinned one-line launcher example to the README.
+- Added a release-pinned one-line launcher example to the README and release notes under `docs/releases/`.
 
 ### Changed
 

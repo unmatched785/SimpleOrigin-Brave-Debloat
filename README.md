@@ -23,17 +23,19 @@ It gives you:
 
 ## One-line launch
 
-Recommended stable launch, pinned to the 0.5.0 release tag:
+Stable release launch, pinned to `0.5.0`:
 
 ```powershell
 irm https://raw.githubusercontent.com/unmatched785/SimpleOrigin-Brave-Debloat/refs/tags/0.5.0/SimpleOrigin.ps1|iex
 ```
 
-Latest development build from `main`:
+Latest build from `main`:
 
 ```powershell
 irm https://raw.githubusercontent.com/unmatched785/SimpleOrigin-Brave-Debloat/main/SimpleOrigin.ps1|iex
 ```
+
+See [releases](https://github.com/unmatched785/SimpleOrigin-Brave-Debloat/releases) for release notes and older versions.
 
 ### What makes this safer than a plain raw-script launch
 
@@ -172,12 +174,6 @@ powershell -ExecutionPolicy Bypass -File .\SimpleOrigin.ps1
 - **Reset Managed Policies** removes the Brave policy values touched by this tool from both HKCU and HKLM.
 - If you decline elevation, User-scope Apply still works, but clearing conflicting Machine-scope values may fail.
 - This tool does not modify Brave binaries and does not try to impersonate the separate Brave Origin product.
-
-## Badge note
-
-The badges at the top of this README are standard **README badges** generated with **Shields.io** and GitHub metadata.
-
-You can make the same kind of badges for release version, stars, downloads, platform, license, PowerShell version, and more.
 
 ## Roadmap
 
