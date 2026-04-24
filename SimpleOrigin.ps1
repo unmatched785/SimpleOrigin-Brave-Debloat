@@ -264,7 +264,7 @@ function Request-ElevatedRelaunch {
 $machineRegistryPath = "HKLM:\SOFTWARE\Policies\BraveSoftware\Brave"
 $userRegistryPath    = "HKCU:\SOFTWARE\Policies\BraveSoftware\Brave"
 $script:registryPath = $userRegistryPath
-$script:toolVersion  = '0.5.3'
+$script:toolVersion  = '0.5.4'
 $script:appWindowTitle = $script:appDisplayName
 
 function Test-IsMachinePolicyPath {
@@ -299,6 +299,26 @@ function Ensure-PolicyPathExists {
     }
 
     return $true
+}
+
+function Test-CanWritePolicyPath {
+    param([string]$Path)
+
+    $testName = '__SimpleOriginWriteTest'
+
+    try {
+        if (-not (Ensure-PolicyPathExists -Path $Path)) {
+            return $false
+        }
+
+        New-ItemProperty -Path $Path -Name $testName -Value 1 -PropertyType DWord -Force -ErrorAction Stop | Out-Null
+        Remove-ItemProperty -Path $Path -Name $testName -ErrorAction SilentlyContinue
+        return $true
+    }
+    catch {
+        Remove-ItemProperty -Path $Path -Name $testName -ErrorAction SilentlyContinue
+        return $false
+    }
 }
 
 function Test-RegistryKeyIsEmpty {
@@ -560,8 +580,13 @@ function Set-ManagedPropertyAtPath {
         return $false
     }
 
-    Set-ItemProperty -Path $Path -Name $Key -Value $Value -Type $Type -Force -ErrorAction Stop
-    return $true
+    try {
+        New-ItemProperty -Path $Path -Name $Key -Value $Value -PropertyType $Type -Force -ErrorAction Stop | Out-Null
+        return $true
+    }
+    catch {
+        return $false
+    }
 }
 
 function Remove-ManagedPropertyFromPath {
@@ -687,13 +712,17 @@ function Set-DnsSettings {
         }
 
         $resolvedMode = 'secure'
-        Set-ManagedPropertyAtPath -Path $TargetPath -Key 'DnsOverHttpsTemplates' -Value $DnsTemplates.Trim() -Type String
+        if (-not (Set-ManagedPropertyAtPath -Path $TargetPath -Key 'DnsOverHttpsTemplates' -Value $DnsTemplates.Trim() -Type String)) {
+            return $false
+        }
     }
     else {
         [void](Remove-ManagedPropertyFromPath -Key 'DnsOverHttpsTemplates' -Path $TargetPath)
     }
 
-    Set-ManagedPropertyAtPath -Path $TargetPath -Key 'DnsOverHttpsMode' -Value $resolvedMode -Type String
+    if (-not (Set-ManagedPropertyAtPath -Path $TargetPath -Key 'DnsOverHttpsMode' -Value $resolvedMode -Type String)) {
+        return $false
+    }
     Clear-OtherScopeManagedProperty -Key 'DnsOverHttpsMode' -OtherPath $OtherPath -OtherScopeName $otherScopeName -OtherScopeWarnings $OtherScopeWarnings
     Clear-OtherScopeManagedProperty -Key 'DnsOverHttpsTemplates' -OtherPath $OtherPath -OtherScopeName $otherScopeName -OtherScopeWarnings $OtherScopeWarnings
     return $true
@@ -1385,6 +1414,17 @@ $applyButton.Add_Click({
             return
         }
 
+        if (-not (Test-CanWritePolicyPath -Path $scopeInfo.TargetPath)) {
+            if (-not (Test-IsAdmin)) {
+                if (Request-ElevatedRelaunch -Reason "$($scopeInfo.ScopeName) policy path is not writable in the current session. This can happen when existing Brave policy keys were created by an elevated process.") {
+                    $form.Close()
+                }
+                return
+            }
+
+            throw "$($scopeInfo.ScopeName) policy path is not writable."
+        }
+
         $selectedFeatures = @{}
         foreach ($feature in (Get-SelectedFeatureObjects)) {
             $selectedFeatures[$feature.Key] = $feature
@@ -1397,7 +1437,9 @@ $applyButton.Add_Click({
         foreach ($key in $uniqueKeys) {
             if ($selectedFeatures.ContainsKey($key)) {
                 $feature = $selectedFeatures[$key]
-                [void](Set-ManagedPropertyAtPath -Path $scopeInfo.TargetPath -Key $feature.Key -Value $feature.Value -Type $feature.Type)
+                if (-not (Set-ManagedPropertyAtPath -Path $scopeInfo.TargetPath -Key $feature.Key -Value $feature.Value -Type $feature.Type)) {
+                    throw "Could not write policy key: $($feature.Key)"
+                }
             }
             else {
                 [void](Remove-ManagedPropertyFromPath -Key $key -Path $scopeInfo.TargetPath)

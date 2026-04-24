@@ -20,6 +20,17 @@ $applyButton.Add_Click({
             return
         }
 
+        if (-not (Test-CanWritePolicyPath -Path $scopeInfo.TargetPath)) {
+            if (-not (Test-IsAdmin)) {
+                if (Request-ElevatedRelaunch -Reason "$($scopeInfo.ScopeName) policy path is not writable in the current session. This can happen when existing Brave policy keys were created by an elevated process.") {
+                    $form.Close()
+                }
+                return
+            }
+
+            throw "$($scopeInfo.ScopeName) policy path is not writable."
+        }
+
         $selectedFeatures = @{}
         foreach ($feature in (Get-SelectedFeatureObjects)) {
             $selectedFeatures[$feature.Key] = $feature
@@ -32,7 +43,9 @@ $applyButton.Add_Click({
         foreach ($key in $uniqueKeys) {
             if ($selectedFeatures.ContainsKey($key)) {
                 $feature = $selectedFeatures[$key]
-                [void](Set-ManagedPropertyAtPath -Path $scopeInfo.TargetPath -Key $feature.Key -Value $feature.Value -Type $feature.Type)
+                if (-not (Set-ManagedPropertyAtPath -Path $scopeInfo.TargetPath -Key $feature.Key -Value $feature.Value -Type $feature.Type)) {
+                    throw "Could not write policy key: $($feature.Key)"
+                }
             }
             else {
                 [void](Remove-ManagedPropertyFromPath -Key $key -Path $scopeInfo.TargetPath)

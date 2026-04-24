@@ -26,7 +26,7 @@ It gives you:
 Run the latest stable release:
 
 ```powershell
-irm https://raw.githubusercontent.com/unmatched785/SimpleOrigin-Brave-Debloat/refs/tags/0.5.3/SimpleOrigin.ps1|iex
+irm https://raw.githubusercontent.com/unmatched785/SimpleOrigin-Brave-Debloat/refs/tags/0.5.4/SimpleOrigin.ps1|iex
 ```
 
 See [releases](https://github.com/unmatched785/SimpleOrigin-Brave-Debloat/releases) for release notes, older versions, and development builds.

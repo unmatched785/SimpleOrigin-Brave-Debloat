@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## 0.5.4 - 2026-04-24
+
+### Fixed
+
+- Added a writeability preflight for the selected policy path before Apply writes policy values.
+- Detected read-only HKCU policy keys created by elevated processes and offered an administrator relaunch instead of failing mid-apply.
+- Switched policy writes to `New-ItemProperty -Force` and surfaced per-key write failures with clearer messages.
+
 ## 0.5.3 - 2026-04-24
 
 ### Fixed

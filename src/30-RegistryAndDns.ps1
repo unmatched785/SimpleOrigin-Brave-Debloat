@@ -93,8 +93,13 @@ function Set-ManagedPropertyAtPath {
         return $false
     }
 
-    Set-ItemProperty -Path $Path -Name $Key -Value $Value -Type $Type -Force -ErrorAction Stop
-    return $true
+    try {
+        New-ItemProperty -Path $Path -Name $Key -Value $Value -PropertyType $Type -Force -ErrorAction Stop | Out-Null
+        return $true
+    }
+    catch {
+        return $false
+    }
 }
 
 function Remove-ManagedPropertyFromPath {
@@ -220,13 +225,17 @@ function Set-DnsSettings {
         }
 
         $resolvedMode = 'secure'
-        Set-ManagedPropertyAtPath -Path $TargetPath -Key 'DnsOverHttpsTemplates' -Value $DnsTemplates.Trim() -Type String
+        if (-not (Set-ManagedPropertyAtPath -Path $TargetPath -Key 'DnsOverHttpsTemplates' -Value $DnsTemplates.Trim() -Type String)) {
+            return $false
+        }
     }
     else {
         [void](Remove-ManagedPropertyFromPath -Key 'DnsOverHttpsTemplates' -Path $TargetPath)
     }
 
-    Set-ManagedPropertyAtPath -Path $TargetPath -Key 'DnsOverHttpsMode' -Value $resolvedMode -Type String
+    if (-not (Set-ManagedPropertyAtPath -Path $TargetPath -Key 'DnsOverHttpsMode' -Value $resolvedMode -Type String)) {
+        return $false
+    }
     Clear-OtherScopeManagedProperty -Key 'DnsOverHttpsMode' -OtherPath $OtherPath -OtherScopeName $otherScopeName -OtherScopeWarnings $OtherScopeWarnings
     Clear-OtherScopeManagedProperty -Key 'DnsOverHttpsTemplates' -OtherPath $OtherPath -OtherScopeName $otherScopeName -OtherScopeWarnings $OtherScopeWarnings
     return $true

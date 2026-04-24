@@ -48,7 +48,7 @@ function Request-ElevatedRelaunch {
 $machineRegistryPath = "HKLM:\SOFTWARE\Policies\BraveSoftware\Brave"
 $userRegistryPath    = "HKCU:\SOFTWARE\Policies\BraveSoftware\Brave"
 $script:registryPath = $userRegistryPath
-$script:toolVersion  = '0.5.3'
+$script:toolVersion  = '0.5.4'
 $script:appWindowTitle = $script:appDisplayName
 
 function Test-IsMachinePolicyPath {
@@ -83,6 +83,26 @@ function Ensure-PolicyPathExists {
     }
 
     return $true
+}
+
+function Test-CanWritePolicyPath {
+    param([string]$Path)
+
+    $testName = '__SimpleOriginWriteTest'
+
+    try {
+        if (-not (Ensure-PolicyPathExists -Path $Path)) {
+            return $false
+        }
+
+        New-ItemProperty -Path $Path -Name $testName -Value 1 -PropertyType DWord -Force -ErrorAction Stop | Out-Null
+        Remove-ItemProperty -Path $Path -Name $testName -ErrorAction SilentlyContinue
+        return $true
+    }
+    catch {
+        Remove-ItemProperty -Path $Path -Name $testName -ErrorAction SilentlyContinue
+        return $false
+    }
 }
 
 function Test-RegistryKeyIsEmpty {
