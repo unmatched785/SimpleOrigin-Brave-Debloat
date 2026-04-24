@@ -152,7 +152,7 @@ Because of that:
 
 ## Local launch
 
-If you already downloaded the file manually, open PowerShell in the same folder and run:
+If you already downloaded the file manually, open PowerShell as **Administrator** in the same folder and run:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\SimpleOrigin.ps1
