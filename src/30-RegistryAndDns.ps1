@@ -74,8 +74,12 @@ function Set-ManagedPropertyAtPath {
         [string]$Type
     )
 
-    Ensure-PolicyPathExists -Path $Path
-    Set-ItemProperty -Path $Path -Name $Key -Value $Value -Type $Type -Force
+    if (-not (Ensure-PolicyPathExists -Path $Path)) {
+        return $false
+    }
+
+    Set-ItemProperty -Path $Path -Name $Key -Value $Value -Type $Type -Force -ErrorAction Stop
+    return $true
 }
 
 function Remove-ManagedPropertyFromPath {
@@ -85,16 +89,20 @@ function Remove-ManagedPropertyFromPath {
     )
 
     try {
-        if (-not (Test-Path -Path $Path)) {
+        if ((Test-IsMachinePolicyPath -Path $Path) -and -not (Test-IsAdmin)) {
+            return $false
+        }
+
+        if (-not (Test-Path -Path $Path -ErrorAction SilentlyContinue)) {
             return $true
         }
 
-        $item = Get-ItemProperty -Path $Path -ErrorAction SilentlyContinue
+        $item = Get-ItemProperty -Path $Path -ErrorAction Stop
         if ($item -and ($item.PSObject.Properties.Name -contains $Key)) {
             Remove-ItemProperty -Path $Path -Name $Key -ErrorAction Stop
         }
 
-        Cleanup-PolicyPathTree -LeafPath $Path
+        [void](Cleanup-PolicyPathTree -LeafPath $Path)
         return $true
     }
     catch {

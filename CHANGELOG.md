@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## 0.5.1 - 2026-04-24
+
+### Fixed
+
+- Fixed noisy HKLM permission errors when applying User (HKCU) policies without administrator rights.
+- Skipped Machine-scope cleanup automatically in non-admin sessions while preserving the existing mixed-scope warning.
+
 ## 0.5.0 - 2026-04-24
 
 ### Added

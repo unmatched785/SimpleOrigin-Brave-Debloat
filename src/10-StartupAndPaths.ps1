@@ -48,41 +48,65 @@ function Request-ElevatedRelaunch {
 $machineRegistryPath = "HKLM:\SOFTWARE\Policies\BraveSoftware\Brave"
 $userRegistryPath    = "HKCU:\SOFTWARE\Policies\BraveSoftware\Brave"
 $script:registryPath = $userRegistryPath
-$script:toolVersion  = '0.5.0'
+$script:toolVersion  = '0.5.1'
 $script:appWindowTitle = $script:appDisplayName
+
+function Test-IsMachinePolicyPath {
+    param([string]$Path)
+    return ([string]$Path -like 'HKLM:\*')
+}
 
 function Ensure-PolicyPathExists {
     param([string]$Path)
-    if (-not (Test-Path -Path $Path)) {
-        New-Item -Path $Path -Force | Out-Null
+
+    if ((Test-IsMachinePolicyPath -Path $Path) -and -not (Test-IsAdmin)) {
+        return $false
     }
+
+    if (-not (Test-Path -Path $Path -ErrorAction SilentlyContinue)) {
+        New-Item -Path $Path -Force -ErrorAction Stop | Out-Null
+    }
+
+    return $true
 }
 
 function Test-RegistryKeyIsEmpty {
     param([string]$Path)
-    if (-not (Test-Path -Path $Path)) { return $true }
 
-    $item = Get-Item -Path $Path -ErrorAction SilentlyContinue
-    if (-not $item) { return $true }
+    try {
+        if (-not (Test-Path -Path $Path -ErrorAction SilentlyContinue)) { return $true }
 
-    if ($item.GetSubKeyNames().Count -gt 0) { return $false }
+        $item = Get-Item -Path $Path -ErrorAction Stop
+        if (-not $item) { return $true }
 
-    $props = (Get-ItemProperty -Path $Path -ErrorAction SilentlyContinue).PSObject.Properties |
-        Where-Object { $_.Name -notlike 'PS*' }
+        if ($item.GetSubKeyNames().Count -gt 0) { return $false }
 
-    return ($props.Count -eq 0)
+        $props = (Get-ItemProperty -Path $Path -ErrorAction Stop).PSObject.Properties |
+            Where-Object { $_.Name -notlike 'PS*' }
+
+        return ($props.Count -eq 0)
+    }
+    catch {
+        return $false
+    }
 }
 
 function Cleanup-PolicyPathTree {
     param([string]$LeafPath)
+
+    if ((Test-IsMachinePolicyPath -Path $LeafPath) -and -not (Test-IsAdmin)) {
+        return $false
+    }
 
     if (Test-RegistryKeyIsEmpty -Path $LeafPath) {
         Remove-Item -Path $LeafPath -Force -ErrorAction SilentlyContinue
     }
 
     $parent = Split-Path -Path $LeafPath -Parent
-    if ($parent -and (Test-Path -Path $parent) -and (Test-RegistryKeyIsEmpty -Path $parent)) {
+    if ($parent -and (Test-Path -Path $parent -ErrorAction SilentlyContinue) -and (Test-RegistryKeyIsEmpty -Path $parent)) {
         Remove-Item -Path $parent -Force -ErrorAction SilentlyContinue
     }
+
+    return $true
 }
 
