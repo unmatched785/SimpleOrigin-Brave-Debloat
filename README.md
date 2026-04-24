@@ -23,19 +23,13 @@ It gives you:
 
 ## One-line launch
 
-Stable release launch, pinned to `0.5.0`:
+Run the latest stable release:
 
 ```powershell
 irm https://raw.githubusercontent.com/unmatched785/SimpleOrigin-Brave-Debloat/refs/tags/0.5.0/SimpleOrigin.ps1|iex
 ```
 
-Latest build from `main`:
-
-```powershell
-irm https://raw.githubusercontent.com/unmatched785/SimpleOrigin-Brave-Debloat/main/SimpleOrigin.ps1|iex
-```
-
-See [releases](https://github.com/unmatched785/SimpleOrigin-Brave-Debloat/releases) for release notes and older versions.
+See [releases](https://github.com/unmatched785/SimpleOrigin-Brave-Debloat/releases) for release notes, older versions, and development builds.
 
 ### What makes this safer than a plain raw-script launch
 
