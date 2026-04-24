@@ -253,12 +253,27 @@ function Request-ElevatedRelaunch {
 $machineRegistryPath = "HKLM:\SOFTWARE\Policies\BraveSoftware\Brave"
 $userRegistryPath    = "HKCU:\SOFTWARE\Policies\BraveSoftware\Brave"
 $script:registryPath = $userRegistryPath
-$script:toolVersion  = '0.5.1'
+$script:toolVersion  = '0.5.2'
 $script:appWindowTitle = $script:appDisplayName
 
 function Test-IsMachinePolicyPath {
     param([string]$Path)
     return ([string]$Path -like 'HKLM:\*')
+}
+
+function Test-CanAccessPolicyPath {
+    param([string]$Path)
+
+    if ((Test-IsMachinePolicyPath -Path $Path) -and -not (Test-IsAdmin)) {
+        return $false
+    }
+
+    try {
+        return [bool](Test-Path -Path $Path -ErrorAction Stop)
+    }
+    catch {
+        return $false
+    }
 }
 
 function Ensure-PolicyPathExists {
@@ -268,7 +283,7 @@ function Ensure-PolicyPathExists {
         return $false
     }
 
-    if (-not (Test-Path -Path $Path -ErrorAction SilentlyContinue)) {
+    if (-not (Test-CanAccessPolicyPath -Path $Path)) {
         New-Item -Path $Path -Force -ErrorAction Stop | Out-Null
     }
 
@@ -279,7 +294,7 @@ function Test-RegistryKeyIsEmpty {
     param([string]$Path)
 
     try {
-        if (-not (Test-Path -Path $Path -ErrorAction SilentlyContinue)) { return $true }
+        if (-not (Test-CanAccessPolicyPath -Path $Path)) { return $true }
 
         $item = Get-Item -Path $Path -ErrorAction Stop
         if (-not $item) { return $true }
@@ -308,7 +323,7 @@ function Cleanup-PolicyPathTree {
     }
 
     $parent = Split-Path -Path $LeafPath -Parent
-    if ($parent -and (Test-Path -Path $parent -ErrorAction SilentlyContinue) -and (Test-RegistryKeyIsEmpty -Path $parent)) {
+    if ($parent -and (Test-CanAccessPolicyPath -Path $parent) -and (Test-RegistryKeyIsEmpty -Path $parent)) {
         Remove-Item -Path $parent -Force -ErrorAction SilentlyContinue
     }
 
@@ -450,10 +465,25 @@ function Get-ManagedPolicyKeys {
     return @($keys)
 }
 
+function Get-PolicyPropertiesAtPath {
+    param([string]$Path)
+
+    try {
+        if (-not (Test-CanAccessPolicyPath -Path $Path)) {
+            return $null
+        }
+
+        return Get-ItemProperty -Path $Path -ErrorAction Stop
+    }
+    catch {
+        return $null
+    }
+}
+
 function Get-PolicySetting {
     param([string]$Key)
-    $machineSettings = Get-ItemProperty -Path $machineRegistryPath -ErrorAction SilentlyContinue
-    $userSettings    = Get-ItemProperty -Path $userRegistryPath -ErrorAction SilentlyContinue
+    $machineSettings = Get-PolicyPropertiesAtPath -Path $machineRegistryPath
+    $userSettings    = Get-PolicyPropertiesAtPath -Path $userRegistryPath
 
     if ($machineSettings -and ($machineSettings.PSObject.Properties.Name -contains $Key)) {
         return @{ Scope = 'Machine'; Value = $machineSettings.$Key }
@@ -466,8 +496,8 @@ function Get-PolicySetting {
 
 function Get-ManagedScopeSummary {
     $keys = @(Get-ManagedPolicyKeys)
-    $machineSettings = Get-ItemProperty -Path $machineRegistryPath -ErrorAction SilentlyContinue
-    $userSettings    = Get-ItemProperty -Path $userRegistryPath -ErrorAction SilentlyContinue
+    $machineSettings = Get-PolicyPropertiesAtPath -Path $machineRegistryPath
+    $userSettings    = Get-PolicyPropertiesAtPath -Path $userRegistryPath
 
     $machineCount = 0
     $userCount = 0
@@ -534,7 +564,7 @@ function Remove-ManagedPropertyFromPath {
             return $false
         }
 
-        if (-not (Test-Path -Path $Path -ErrorAction SilentlyContinue)) {
+        if (-not (Test-CanAccessPolicyPath -Path $Path)) {
             return $true
         }
 
@@ -1328,100 +1358,122 @@ function Get-SelectedFeatureObjects {
 }
 
 $applyButton.Add_Click({
-    $scopeInfo = Get-WriteScopeInfo -ScopeSelection ([string]$scopeDropdown.SelectedItem)
-    $script:registryPath = [string]$scopeInfo.TargetPath
+    try {
+        $scopeInfo = Get-WriteScopeInfo -ScopeSelection ([string]$scopeDropdown.SelectedItem)
+        $script:registryPath = [string]$scopeInfo.TargetPath
 
-    if ($scopeInfo.ScopeName -eq 'Machine' -and -not (Test-IsAdmin)) {
-        if (Request-ElevatedRelaunch -Reason 'Machine scope requires administrator rights.') {
-            $form.Close()
+        if ($scopeInfo.ScopeName -eq 'Machine' -and -not (Test-IsAdmin)) {
+            if (Request-ElevatedRelaunch -Reason 'Machine scope requires administrator rights.') {
+                $form.Close()
+            }
+            return
         }
-        return
-    }
 
-    $selectedFeatures = @{}
-    foreach ($feature in (Get-SelectedFeatureObjects)) {
-        $selectedFeatures[$feature.Key] = $feature
-    }
+        $selectedFeatures = @{}
+        foreach ($feature in (Get-SelectedFeatureObjects)) {
+            $selectedFeatures[$feature.Key] = $feature
+        }
 
-    $otherScopeWarnings = New-Object System.Collections.ArrayList
-    $otherScopeName = if ($scopeInfo.ScopeName -eq 'User') { 'Machine' } else { 'User' }
+        $otherScopeWarnings = New-Object System.Collections.ArrayList
+        $otherScopeName = if ($scopeInfo.ScopeName -eq 'User') { 'Machine' } else { 'User' }
 
-    $uniqueKeys = $featureCatalog | ForEach-Object { $_.Key } | Select-Object -Unique
-    foreach ($key in $uniqueKeys) {
-        if ($selectedFeatures.ContainsKey($key)) {
-            $feature = $selectedFeatures[$key]
-            Set-ManagedPropertyAtPath -Path $scopeInfo.TargetPath -Key $feature.Key -Value $feature.Value -Type $feature.Type
+        $uniqueKeys = $featureCatalog | ForEach-Object { $_.Key } | Select-Object -Unique
+        foreach ($key in $uniqueKeys) {
+            if ($selectedFeatures.ContainsKey($key)) {
+                $feature = $selectedFeatures[$key]
+                [void](Set-ManagedPropertyAtPath -Path $scopeInfo.TargetPath -Key $feature.Key -Value $feature.Value -Type $feature.Type)
+            }
+            else {
+                [void](Remove-ManagedPropertyFromPath -Key $key -Path $scopeInfo.TargetPath)
+            }
+
+            Clear-OtherScopeManagedProperty -Key $key -OtherPath $scopeInfo.OtherPath -OtherScopeName $otherScopeName -OtherScopeWarnings $otherScopeWarnings
+        }
+
+        foreach ($legacyKey in $legacyManagedPolicyKeys) {
+            [void](Remove-ManagedPropertyFromPath -Key $legacyKey -Path $scopeInfo.TargetPath)
+            Clear-OtherScopeManagedProperty -Key $legacyKey -OtherPath $scopeInfo.OtherPath -OtherScopeName $otherScopeName -OtherScopeWarnings $otherScopeWarnings
+        }
+
+        if (-not (Set-DnsSettings -DnsMode ([string]$dnsDropdown.SelectedItem) -DnsTemplates $dnsTemplateBox.Text -TargetPath $scopeInfo.TargetPath -OtherPath $scopeInfo.OtherPath -TargetScopeName $scopeInfo.ScopeName -OtherScopeWarnings $otherScopeWarnings)) {
+            Initialize-CurrentSettings
+            return
+        }
+
+        [void](Cleanup-PolicyPathTree -LeafPath $machineRegistryPath)
+        [void](Cleanup-PolicyPathTree -LeafPath $userRegistryPath)
+
+        Initialize-CurrentSettings
+
+        if ($otherScopeWarnings.Count -gt 0) {
+            $statusLabel.Text = "Applied to $($scopeInfo.ScopeName) scope. Some $otherScopeName-scope keys could not be cleared."
+            [System.Windows.Forms.MessageBox]::Show(
+                "Settings were written to $($scopeInfo.ScopeName) scope. However, some $otherScopeName-scope keys could not be cleared, so Brave may still prefer those values. Use Reset Managed Policies or relaunch as admin if you want a clean single-scope state.",
+                $script:appDisplayName,
+                [System.Windows.Forms.MessageBoxButtons]::OK,
+                [System.Windows.Forms.MessageBoxIcon]::Warning
+            ) | Out-Null
         }
         else {
-            [void](Remove-ManagedPropertyFromPath -Key $key -Path $scopeInfo.TargetPath)
+            $statusLabel.Text = "Applied to $($scopeInfo.ScopeName) scope. Restart Brave."
+            [System.Windows.Forms.MessageBox]::Show(
+                "Settings applied. For the keys managed by this tool, $($scopeInfo.ScopeName) scope is now authoritative. Restart Brave and check brave://policy if you want to verify the result.",
+                $script:appDisplayName,
+                [System.Windows.Forms.MessageBoxButtons]::OK,
+                [System.Windows.Forms.MessageBoxIcon]::Information
+            ) | Out-Null
         }
-
-        Clear-OtherScopeManagedProperty -Key $key -OtherPath $scopeInfo.OtherPath -OtherScopeName $otherScopeName -OtherScopeWarnings $otherScopeWarnings
     }
-
-    foreach ($legacyKey in $legacyManagedPolicyKeys) {
-        [void](Remove-ManagedPropertyFromPath -Key $legacyKey -Path $scopeInfo.TargetPath)
-        Clear-OtherScopeManagedProperty -Key $legacyKey -OtherPath $scopeInfo.OtherPath -OtherScopeName $otherScopeName -OtherScopeWarnings $otherScopeWarnings
-    }
-
-    if (-not (Set-DnsSettings -DnsMode ([string]$dnsDropdown.SelectedItem) -DnsTemplates $dnsTemplateBox.Text -TargetPath $scopeInfo.TargetPath -OtherPath $scopeInfo.OtherPath -TargetScopeName $scopeInfo.ScopeName -OtherScopeWarnings $otherScopeWarnings)) {
-        Initialize-CurrentSettings
-        return
-    }
-
-    Cleanup-PolicyPathTree -LeafPath $machineRegistryPath
-    Cleanup-PolicyPathTree -LeafPath $userRegistryPath
-
-    Initialize-CurrentSettings
-
-    if ($otherScopeWarnings.Count -gt 0) {
-        $statusLabel.Text = "Applied to $($scopeInfo.ScopeName) scope. Some $otherScopeName-scope keys could not be cleared."
+    catch {
+        $statusLabel.Text = 'Apply failed.'
         [System.Windows.Forms.MessageBox]::Show(
-            "Settings were written to $($scopeInfo.ScopeName) scope. However, some $otherScopeName-scope keys could not be cleared, so Brave may still prefer those values. Use Reset Managed Policies or relaunch as admin if you want a clean single-scope state.",
+            "Apply failed: $($_.Exception.Message)",
             $script:appDisplayName,
             [System.Windows.Forms.MessageBoxButtons]::OK,
-            [System.Windows.Forms.MessageBoxIcon]::Warning
-        ) | Out-Null
-    }
-    else {
-        $statusLabel.Text = "Applied to $($scopeInfo.ScopeName) scope. Restart Brave."
-        [System.Windows.Forms.MessageBox]::Show(
-            "Settings applied. For the keys managed by this tool, $($scopeInfo.ScopeName) scope is now authoritative. Restart Brave and check brave://policy if you want to verify the result.",
-            $script:appDisplayName,
-            [System.Windows.Forms.MessageBoxButtons]::OK,
-            [System.Windows.Forms.MessageBoxIcon]::Information
+            [System.Windows.Forms.MessageBoxIcon]::Error
         ) | Out-Null
     }
 })
 
 $resetButton.Add_Click({
-    $scopeSummary = Get-ManagedScopeSummary
-    if ($scopeSummary.HasMachine -and -not (Test-IsAdmin)) {
-        if (Request-ElevatedRelaunch -Reason 'Reset Managed Policies needs administrator rights because Machine (HKLM) keys are present.') {
-            $form.Close()
+    try {
+        $scopeSummary = Get-ManagedScopeSummary
+        if ($scopeSummary.HasMachine -and -not (Test-IsAdmin)) {
+            if (Request-ElevatedRelaunch -Reason 'Reset Managed Policies needs administrator rights because Machine (HKLM) keys are present.') {
+                $form.Close()
+            }
+            return
         }
-        return
+
+        $confirm = [System.Windows.Forms.MessageBox]::Show(
+            'This removes the managed Brave policies touched by this tool from both HKLM and HKCU. Continue?',
+            $script:appDisplayName,
+            [System.Windows.Forms.MessageBoxButtons]::YesNo,
+            [System.Windows.Forms.MessageBoxIcon]::Warning
+        )
+
+        if ($confirm -ne [System.Windows.Forms.DialogResult]::Yes) {
+            return
+        }
+
+        foreach ($key in (Get-ManagedPolicyKeys)) {
+            Remove-ManagedPropertyEverywhere -Key $key
+        }
+
+        [void](Cleanup-PolicyPathTree -LeafPath $machineRegistryPath)
+        [void](Cleanup-PolicyPathTree -LeafPath $userRegistryPath)
+        Initialize-CurrentSettings
+        $statusLabel.Text = 'Managed policies reset from HKLM and HKCU.'
     }
-
-    $confirm = [System.Windows.Forms.MessageBox]::Show(
-        'This removes the managed Brave policies touched by this tool from both HKLM and HKCU. Continue?',
-        $script:appDisplayName,
-        [System.Windows.Forms.MessageBoxButtons]::YesNo,
-        [System.Windows.Forms.MessageBoxIcon]::Warning
-    )
-
-    if ($confirm -ne [System.Windows.Forms.DialogResult]::Yes) {
-        return
+    catch {
+        $statusLabel.Text = 'Reset failed.'
+        [System.Windows.Forms.MessageBox]::Show(
+            "Reset failed: $($_.Exception.Message)",
+            $script:appDisplayName,
+            [System.Windows.Forms.MessageBoxButtons]::OK,
+            [System.Windows.Forms.MessageBoxIcon]::Error
+        ) | Out-Null
     }
-
-    foreach ($key in (Get-ManagedPolicyKeys)) {
-        Remove-ManagedPropertyEverywhere -Key $key
-    }
-
-    Cleanup-PolicyPathTree -LeafPath $machineRegistryPath
-    Cleanup-PolicyPathTree -LeafPath $userRegistryPath
-    Initialize-CurrentSettings
-    $statusLabel.Text = 'Managed policies reset from HKLM and HKCU.'
 })
 
 $exportButton.Add_Click({

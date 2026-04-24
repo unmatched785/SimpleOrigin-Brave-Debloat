@@ -48,12 +48,27 @@ function Request-ElevatedRelaunch {
 $machineRegistryPath = "HKLM:\SOFTWARE\Policies\BraveSoftware\Brave"
 $userRegistryPath    = "HKCU:\SOFTWARE\Policies\BraveSoftware\Brave"
 $script:registryPath = $userRegistryPath
-$script:toolVersion  = '0.5.1'
+$script:toolVersion  = '0.5.2'
 $script:appWindowTitle = $script:appDisplayName
 
 function Test-IsMachinePolicyPath {
     param([string]$Path)
     return ([string]$Path -like 'HKLM:\*')
+}
+
+function Test-CanAccessPolicyPath {
+    param([string]$Path)
+
+    if ((Test-IsMachinePolicyPath -Path $Path) -and -not (Test-IsAdmin)) {
+        return $false
+    }
+
+    try {
+        return [bool](Test-Path -Path $Path -ErrorAction Stop)
+    }
+    catch {
+        return $false
+    }
 }
 
 function Ensure-PolicyPathExists {
@@ -63,7 +78,7 @@ function Ensure-PolicyPathExists {
         return $false
     }
 
-    if (-not (Test-Path -Path $Path -ErrorAction SilentlyContinue)) {
+    if (-not (Test-CanAccessPolicyPath -Path $Path)) {
         New-Item -Path $Path -Force -ErrorAction Stop | Out-Null
     }
 
@@ -74,7 +89,7 @@ function Test-RegistryKeyIsEmpty {
     param([string]$Path)
 
     try {
-        if (-not (Test-Path -Path $Path -ErrorAction SilentlyContinue)) { return $true }
+        if (-not (Test-CanAccessPolicyPath -Path $Path)) { return $true }
 
         $item = Get-Item -Path $Path -ErrorAction Stop
         if (-not $item) { return $true }
@@ -103,7 +118,7 @@ function Cleanup-PolicyPathTree {
     }
 
     $parent = Split-Path -Path $LeafPath -Parent
-    if ($parent -and (Test-Path -Path $parent -ErrorAction SilentlyContinue) -and (Test-RegistryKeyIsEmpty -Path $parent)) {
+    if ($parent -and (Test-CanAccessPolicyPath -Path $parent) -and (Test-RegistryKeyIsEmpty -Path $parent)) {
         Remove-Item -Path $parent -Force -ErrorAction SilentlyContinue
     }
 

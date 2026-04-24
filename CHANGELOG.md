@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## 0.5.2 - 2026-04-24
+
+### Fixed
+
+- Hardened registry reads so restricted HKLM policy keys cannot surface WinForms unhandled exception dialogs in non-admin sessions.
+- Added top-level Apply and Reset error handling so unexpected registry failures are reported through the app instead of the default component exception dialog.
+
 ## 0.5.1 - 2026-04-24
 
 ### Fixed

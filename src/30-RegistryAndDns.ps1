@@ -9,10 +9,25 @@ function Get-ManagedPolicyKeys {
     return @($keys)
 }
 
+function Get-PolicyPropertiesAtPath {
+    param([string]$Path)
+
+    try {
+        if (-not (Test-CanAccessPolicyPath -Path $Path)) {
+            return $null
+        }
+
+        return Get-ItemProperty -Path $Path -ErrorAction Stop
+    }
+    catch {
+        return $null
+    }
+}
+
 function Get-PolicySetting {
     param([string]$Key)
-    $machineSettings = Get-ItemProperty -Path $machineRegistryPath -ErrorAction SilentlyContinue
-    $userSettings    = Get-ItemProperty -Path $userRegistryPath -ErrorAction SilentlyContinue
+    $machineSettings = Get-PolicyPropertiesAtPath -Path $machineRegistryPath
+    $userSettings    = Get-PolicyPropertiesAtPath -Path $userRegistryPath
 
     if ($machineSettings -and ($machineSettings.PSObject.Properties.Name -contains $Key)) {
         return @{ Scope = 'Machine'; Value = $machineSettings.$Key }
@@ -25,8 +40,8 @@ function Get-PolicySetting {
 
 function Get-ManagedScopeSummary {
     $keys = @(Get-ManagedPolicyKeys)
-    $machineSettings = Get-ItemProperty -Path $machineRegistryPath -ErrorAction SilentlyContinue
-    $userSettings    = Get-ItemProperty -Path $userRegistryPath -ErrorAction SilentlyContinue
+    $machineSettings = Get-PolicyPropertiesAtPath -Path $machineRegistryPath
+    $userSettings    = Get-PolicyPropertiesAtPath -Path $userRegistryPath
 
     $machineCount = 0
     $userCount = 0
@@ -93,7 +108,7 @@ function Remove-ManagedPropertyFromPath {
             return $false
         }
 
-        if (-not (Test-Path -Path $Path -ErrorAction SilentlyContinue)) {
+        if (-not (Test-CanAccessPolicyPath -Path $Path)) {
             return $true
         }
 
