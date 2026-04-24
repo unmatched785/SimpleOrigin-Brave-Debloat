@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## 0.6.0 - 2026-04-24
+
+### Changed
+
+- Changed the launch model to require administrator rights, matching the behavior of Windows utilities that manage system policy.
+- Updated the README one-line launch instructions to tell users to open PowerShell as Administrator first.
+- Simplified the expected permission model so protected HKCU/HKLM policy keys do not fail unpredictably during Apply.
+
 ## 0.5.4 - 2026-04-24
 
 ### Fixed

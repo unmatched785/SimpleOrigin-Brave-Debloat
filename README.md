@@ -23,10 +23,10 @@ It gives you:
 
 ## One-line launch
 
-Run the latest stable release:
+Open PowerShell as **Administrator**, then run:
 
 ```powershell
-irm https://raw.githubusercontent.com/unmatched785/SimpleOrigin-Brave-Debloat/refs/tags/0.5.4/SimpleOrigin.ps1|iex
+irm https://raw.githubusercontent.com/unmatched785/SimpleOrigin-Brave-Debloat/refs/tags/0.6.0/SimpleOrigin.ps1|iex
 ```
 
 See [releases](https://github.com/unmatched785/SimpleOrigin-Brave-Debloat/releases) for release notes, older versions, and development builds.
@@ -86,7 +86,7 @@ Manual mode. Choose each policy toggle yourself.
 
 Use **User (HKCU) - Recommended** for most personal PCs. Use **Machine (HKLM)** only when you intentionally want system-wide Brave policy for all users on the device.
 
-The app opens in normal user context by default. It asks to relaunch as administrator only if you choose a Machine-scope action that needs HKLM access.
+The app requires administrator rights on launch. Brave managed policy keys can inherit restrictive Windows registry ACLs, including under HKCU, so running elevated is the most reliable path.
 
 For the keys managed by this tool, **Apply** tries to make the selected scope authoritative by:
 
@@ -162,11 +162,11 @@ powershell -ExecutionPolicy Bypass -File .\SimpleOrigin.ps1
 
 - Light theme is the default.
 - Dark mode is optional via the top-right theme button.
-- The app does not request administrator rights on launch.
+- The app requires administrator rights on launch.
 - Restart Brave after applying settings.
 - Verify results in `brave://policy` if needed.
 - **Reset Managed Policies** removes the Brave policy values touched by this tool from both HKCU and HKLM.
-- If you decline elevation, User-scope Apply still works, but clearing conflicting Machine-scope values may fail.
+- If you decline elevation, the app exits without applying policy changes.
 - This tool does not modify Brave binaries and does not try to impersonate the separate Brave Origin product.
 
 ## Roadmap

@@ -264,12 +264,57 @@ function Request-ElevatedRelaunch {
 $machineRegistryPath = "HKLM:\SOFTWARE\Policies\BraveSoftware\Brave"
 $userRegistryPath    = "HKCU:\SOFTWARE\Policies\BraveSoftware\Brave"
 $script:registryPath = $userRegistryPath
-$script:toolVersion  = '0.5.4'
+$script:toolVersion  = '0.6.0'
 $script:appWindowTitle = $script:appDisplayName
 
 function Test-IsMachinePolicyPath {
     param([string]$Path)
     return ([string]$Path -like 'HKLM:\*')
+}
+
+function Ensure-AdminSession {
+    if (Test-IsAdmin) {
+        return $true
+    }
+
+    if ([string]::IsNullOrWhiteSpace($script:currentScriptPath) -or -not (Test-Path -LiteralPath $script:currentScriptPath)) {
+        [System.Windows.Forms.MessageBox]::Show(
+            "$($script:appDisplayName) must be run as administrator because Brave managed policy keys can be protected by Windows registry ACLs. Open PowerShell as Administrator and run the launcher again.",
+            $script:appDisplayName,
+            [System.Windows.Forms.MessageBoxButtons]::OK,
+            [System.Windows.Forms.MessageBoxIcon]::Warning
+        ) | Out-Null
+        return $false
+    }
+
+    $confirm = [System.Windows.Forms.MessageBox]::Show(
+        "$($script:appDisplayName) must be run as administrator to manage Brave policies reliably.`r`n`r`nRelaunch as administrator now?",
+        $script:appDisplayName,
+        [System.Windows.Forms.MessageBoxButtons]::YesNo,
+        [System.Windows.Forms.MessageBoxIcon]::Question
+    )
+
+    if ($confirm -ne [System.Windows.Forms.DialogResult]::Yes) {
+        return $false
+    }
+
+    try {
+        Start-Process powershell -ArgumentList "-ExecutionPolicy Bypass -File `"$script:currentScriptPath`" -Bootstrap -NoAdminRelaunch" -Verb RunAs
+        return $false
+    }
+    catch {
+        [System.Windows.Forms.MessageBox]::Show(
+            "Administrator relaunch failed: $($_.Exception.Message)",
+            $script:appDisplayName,
+            [System.Windows.Forms.MessageBoxButtons]::OK,
+            [System.Windows.Forms.MessageBoxIcon]::Error
+        ) | Out-Null
+        return $false
+    }
+}
+
+if (-not (Ensure-AdminSession)) {
+    return
 }
 
 function Test-CanAccessPolicyPath {
