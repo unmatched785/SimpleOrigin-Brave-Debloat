@@ -11,36 +11,18 @@ function Request-ElevatedRelaunch {
     param([string]$Reason)
 
     if ([string]::IsNullOrWhiteSpace($script:currentScriptPath) -or -not (Test-Path -LiteralPath $script:currentScriptPath)) {
-        [System.Windows.Forms.MessageBox]::Show(
-            "$Reason Relaunch this script as administrator if you want to write or clear Machine (HKLM) policies.",
-            $script:appDisplayName,
-            [System.Windows.Forms.MessageBoxButtons]::OK,
-            [System.Windows.Forms.MessageBoxIcon]::Warning
-        ) | Out-Null
+        Write-Warning "$Reason Open PowerShell as Administrator and run the launcher again."
         return $false
     }
 
-    $confirm = [System.Windows.Forms.MessageBox]::Show(
-        "$Reason`r`n`r`nRelaunch as administrator now?",
-        $script:appDisplayName,
-        [System.Windows.Forms.MessageBoxButtons]::YesNo,
-        [System.Windows.Forms.MessageBoxIcon]::Question
-    )
-
-    if ($confirm -ne [System.Windows.Forms.DialogResult]::Yes) {
-        return $false
-    }
+    Write-Host $Reason
+    Write-Host "Requesting administrator permission..."
 
     try {
         Start-Process powershell -ArgumentList "-ExecutionPolicy Bypass -File `"$script:currentScriptPath`" -Bootstrap -NoAdminRelaunch" -Verb RunAs
         return $true
     } catch {
-        [System.Windows.Forms.MessageBox]::Show(
-            "Administrator rights were not granted. The app will continue in the current user context.",
-            $script:appDisplayName,
-            [System.Windows.Forms.MessageBoxButtons]::OK,
-            [System.Windows.Forms.MessageBoxIcon]::Warning
-        ) | Out-Null
+        Write-Warning "Administrator relaunch failed or was cancelled: $($_.Exception.Message)"
         return $false
     }
 }
