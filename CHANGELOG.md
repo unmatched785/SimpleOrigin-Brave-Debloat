@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file.
 ### Changed
 
 - Aligned the documented one-line launcher with the bootstrap behavior by pointing users to the latest `main` script instead of a version-pinned raw URL.
+- Replaced the startup administrator relaunch confirmation dialog with concise console status lines before the Windows UAC prompt.
 
 ## 0.6.0 - 2026-04-24
 

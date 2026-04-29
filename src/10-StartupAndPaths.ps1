@@ -62,37 +62,19 @@ function Ensure-AdminSession {
     }
 
     if ([string]::IsNullOrWhiteSpace($script:currentScriptPath) -or -not (Test-Path -LiteralPath $script:currentScriptPath)) {
-        [System.Windows.Forms.MessageBox]::Show(
-            "$($script:appDisplayName) must be run as administrator because Brave managed policy keys can be protected by Windows registry ACLs. Open PowerShell as Administrator and run the launcher again.",
-            $script:appDisplayName,
-            [System.Windows.Forms.MessageBoxButtons]::OK,
-            [System.Windows.Forms.MessageBoxIcon]::Warning
-        ) | Out-Null
+        Write-Warning "$($script:appDisplayName) requires administrator rights. Open PowerShell as Administrator and run the launcher again."
         return $false
     }
 
-    $confirm = [System.Windows.Forms.MessageBox]::Show(
-        "$($script:appDisplayName) must be run as administrator to manage Brave policies reliably.`r`n`r`nRelaunch as administrator now?",
-        $script:appDisplayName,
-        [System.Windows.Forms.MessageBoxButtons]::YesNo,
-        [System.Windows.Forms.MessageBoxIcon]::Question
-    )
-
-    if ($confirm -ne [System.Windows.Forms.DialogResult]::Yes) {
-        return $false
-    }
+    Write-Host "$($script:appDisplayName) requires administrator rights to manage Brave policies reliably."
+    Write-Host "Requesting administrator permission..."
 
     try {
         Start-Process powershell -ArgumentList "-ExecutionPolicy Bypass -File `"$script:currentScriptPath`" -Bootstrap -NoAdminRelaunch" -Verb RunAs
         return $false
     }
     catch {
-        [System.Windows.Forms.MessageBox]::Show(
-            "Administrator relaunch failed: $($_.Exception.Message)",
-            $script:appDisplayName,
-            [System.Windows.Forms.MessageBoxButtons]::OK,
-            [System.Windows.Forms.MessageBoxIcon]::Error
-        ) | Out-Null
+        Write-Warning "Administrator relaunch failed or was cancelled: $($_.Exception.Message)"
         return $false
     }
 }
