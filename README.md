@@ -26,10 +26,10 @@ It gives you:
 Open PowerShell as **Administrator**, then run:
 
 ```powershell
-irm https://raw.githubusercontent.com/unmatched785/SimpleOrigin-Brave-Debloat/refs/tags/0.6.0/SimpleOrigin.ps1|iex
+irm https://raw.githubusercontent.com/unmatched785/SimpleOrigin-Brave-Debloat/main/SimpleOrigin.ps1|iex
 ```
 
-See [releases](https://github.com/unmatched785/SimpleOrigin-Brave-Debloat/releases) for release notes, older versions, and development builds.
+This launcher tracks the latest `main` build. See [releases](https://github.com/unmatched785/SimpleOrigin-Brave-Debloat/releases) for release notes and older version snapshots.
 
 ### What makes this safer than a plain raw-script launch
 
@@ -37,7 +37,7 @@ Simple Origin - Brave Debloat now includes a bootstrap path for `irm ... | iex` 
 
 If it detects that it was launched directly from memory instead of from a file, it will:
 
-1. download a fresh copy to `%TEMP%\SimpleOrigin-Brave-Debloat\SimpleOrigin.ps1`
+1. download the latest `main` copy to `%TEMP%\SimpleOrigin-Brave-Debloat\SimpleOrigin.ps1`
 2. write that copy as UTF-8 without BOM so `irm ... | iex` and file relaunch use the same script bytes
 3. unblock it if needed
 4. relaunch from the temp file with `-ExecutionPolicy Bypass`
